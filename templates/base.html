@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}BUP SSMP{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">BUP SSMP</div>
+            <ul class="nav-menu">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Students</a></li>
+                <li><a href="#">Departments</a></li>
+                <li><a href="#">Courses</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+                <a href="#" class="btn btn-primary">Register</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <div class="alert">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>© 2025 <a href="https://bup.edu.bd" target="_blank">BUP</a>. All Rights Reserved.</p>
+            <div class="footer-links">
+                <a href="https://bup.edu.bd" target="_blank">bup.edu.bd</a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
