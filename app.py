@@ -65,18 +65,28 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email_or_id = request.form.get('email')
         password = request.form.get('password')
         remember = True if request.form.get('remember') else False
         
-        user = User.query.filter_by(email=email).first()
+        # Try to find user by email first
+        user = User.query.filter_by(email=email_or_id).first()
+        
+        # If not found by email, try by student ID
+        if not user:
+            try:
+                student_id = int(email_or_id)
+                user = User.query.filter_by(id=student_id).first()
+            except ValueError:
+                # Not a valid number, skip ID lookup
+                pass
         
         # Direct password comparison (plain text)
         if user and user.password == password:
             login_user(user, remember=remember)
             return redirect(url_for('dashboard'))
         else:
-            flash('Invalid email or password')
+            flash('Invalid email/ID or password')
             return redirect(url_for('login'))
     
     return render_template('login.html')
