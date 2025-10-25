@@ -5,7 +5,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///scholarmate.db'
+
+# MySQL Database Configuration
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://ssmp_user:ssmp_password@localhost/ssmp'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -13,12 +15,44 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-# User Model
-class User(UserMixin, db.Model):
+# Department Model
+class Department(db.Model):
+    __tablename__ = 'departments'
+    
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    faculty = db.Column(db.String(100), nullable=False)
+    budget = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.TIMESTAMP)
+    updated_at = db.Column(db.TIMESTAMP)
+
+# User Model - mapped to students table
+class User(UserMixin, db.Model):
+    __tablename__ = 'students'
+    
+    id = db.Column(db.BigInteger, primary_key=True)
+    reg_no = db.Column(db.BigInteger, unique=True, nullable=False)
+    dept_id = db.Column(db.Integer, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    session = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    name = db.Column(db.String(100))
+    password = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.TIMESTAMP)
+    updated_at = db.Column(db.TIMESTAMP)
+    
+    # Relationship with department
+    def get_department(self):
+        return Department.query.get(self.dept_id)
+
+# Academic Records Model
+class AcademicRecord(db.Model):
+    __tablename__ = 'academic_records'
+    
+    reg_no = db.Column(db.BigInteger, primary_key=True)
+    student_id = db.Column(db.BigInteger, nullable=False)
+    cgpa = db.Column(db.Float, nullable=False)
+    gpa = db.Column(db.Float, nullable=False)
+    semester = db.Column(db.String(20), nullable=False)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,7 +71,8 @@ def login():
         
         user = User.query.filter_by(email=email).first()
         
-        if user and check_password_hash(user.password, password):
+        # Direct password comparison (plain text)
+        if user and user.password == password:
             login_user(user, remember=remember)
             return redirect(url_for('dashboard'))
         else:
@@ -49,7 +84,16 @@ def login():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html')
+    # Get department info
+    department = current_user.get_department()
+    
+    # Get academic record
+    academic_record = AcademicRecord.query.filter_by(student_id=current_user.id).first()
+    
+    return render_template('dashboard.html', 
+                         user=current_user, 
+                         department=department,
+                         academic_record=academic_record)
 
 @app.route('/logout')
 @login_required
@@ -58,6 +102,4 @@ def logout():
     return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True)
