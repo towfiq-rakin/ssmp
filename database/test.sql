@@ -1,105 +1,3 @@
-create database if not exists ssmp;
-use ssmp;
-
--- Departments table (create first since students references it)
-create table if not exists departments (
-    id int primary key,
-    name varchar(100) unique not null,
-    faculty varchar(100) not null,
-    budget float not null,
-    created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp on update current_timestamp
-);
-
--- Admin table
-create table if not exists admins (
-    id int primary key auto_increment,
-    name varchar(100) not null,
-    dept_id int not null,
-    email varchar(100) unique not null,
-    password varchar(255) not null,
-    created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp on update current_timestamp,
-    foreign key (dept_id) references departments(id)
-);
-
-
--- Students table
-create table if not exists students (
-    id int primary key,
-    reg_no int unique not null,
-    dept_id int not null,
-    name varchar(100) not null,
-    session varchar(20) not null,
-    email varchar(100) unique not null,
-    password varchar(255) not null,
-    created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp on update current_timestamp,
-    foreign key (dept_id) references departments(id)
-);
-
--- Academic Records table
-create table if not exists academic_records (
-    reg_no int primary key,
-    student_id int,
-    cgpa float not null,
-    gpa float not null,
-    semester varchar(20) not null,
-    foreign key (student_id) references students(id)
-);  
-
--- Income records table
-create table if not exists income_records (
-    id int primary key auto_increment,
-    student_id int not null,
-    amount float not null,
-    source varchar(255) not null,
-    family_member int not null,
-    date timestamp default current_timestamp,
-    foreign key (student_id) references students(id)
-);
-
--- Application table
-create table if not exists applications (
-    id int primary key auto_increment,
-    student_id int not null,
-    type varchar(255) not null,
-    semester varchar(50) not null,
-    status varchar(100) not null,
-    created_at timestamp default current_timestamp,
-    updated_at timestamp default current_timestamp on update current_timestamp,
-    foreign key (student_id) references students(id)
-);
-
--- Scholarship table
-create table if not exists scholarships (
-    id int primary key auto_increment,
-    student_id int not null,
-    student_name varchar(100) not null,
-    type varchar(100) not null,
-    amount float not null,
-    semester varchar(50) not null,
-    awarded_at timestamp default current_timestamp,
-    foreign key (student_id) references students(id)
-);
-
--- Stipend table
-create table if not exists stipends (
-    id int primary key auto_increment,
-    student_id int not null,
-    student_name varchar(100) not null,
-    type varchar(100) not null,
-    amount float not null,
-    semester varchar(50) not null,
-    awarded_at timestamp default current_timestamp,
-    foreign key (student_id) references students(id)
-);
-
-insert into departments (id, name, faculty, budget) values
-(1, 'Computer Science and Engineering', 'FST', 200000.00),
-(2, 'Information and Communication Technology', 'FST', 200000.00),
-(3, 'Environmental Science', 'FST', 200000.00);
-
 insert into students (id, reg_no, dept_id, name, session, email, password) values
 (2252421061,104201220061,1, 'LUTFUL AHMED NADIM', '2021-2022', '2252421061@student.bup.edu.bd', 'admin'),
 (2252421086,104201220086,1, 'MAINUL HASSAN ASIF', '2021-2022', '2252421086@student.bup.edu.bd', 'admin'),
@@ -163,6 +61,7 @@ insert into students (id, reg_no, dept_id, name, session, email, password) value
 (23524202128,104201230128,1, 'MASNOON TAHIM SIJAN', '2022-2023', '23524202128@student.bup.edu.bd', 'admin'),
 (23524202129,104201230129,1, 'ABDUL HAKIM SHIFAT', '2022-2023', '23524202129@student.bup.edu.bd', 'admin'),
 (23524202130,104201230130,1, 'TAMIM SHARIAR', '2022-2023', '23524202130@student.bup.edu.bd', 'admin'),
+(23524202131,104201230131,1, 'TOWFIQ OMAR RAKIN', '2022-2023', '23524202131@student.bup.edu.bd', 'admin'),
 (23524202133,104201230133,1, 'TAHIA ZAIMA', '2022-2023', '23524202133@student.bup.edu.bd', 'admin'),
 (23524202134,104201230134,1, 'TABIDA AHMED SUMAIYA', '2022-2023', '23524202134@student.bup.edu.bd', 'admin'),
 (23524202135,104201230135,1, 'ABID HASAN ZIDEN', '2022-2023', '23524202135@student.bup.edu.bd', 'admin'),
@@ -180,7 +79,3 @@ insert into students (id, reg_no, dept_id, name, session, email, password) value
 (23524202148,104201230148,1, 'MD. ABID REJWAN', '2022-2023', '23524202148@student.bup.edu.bd', 'admin'),
 (23524202149,104201230149,1, 'MD. SHOAIB', '2022-2023', '23524202149@student.bup.edu.bd', 'admin'),
 (23524202151,104201230151,1, 'MD. TAHMID ALAM', '2022-2023', '23524202151@student.bup.edu.bd', 'admin');
-
-insert into academic_records (reg_no, student_id, cgpa, gpa, semester) values
-(104201230131, 23524202131, 3.77, 3.92, '5th Semester');
-
