@@ -20,26 +20,25 @@ def login():
     if request.method == 'POST':
         email_or_id = request.form.get('email')
         password = request.form.get('password')
-        user_type = request.form.get('user_type', 'student')  # Default to student
         remember = True if request.form.get('remember') else False
         
         user = None
         
-        if user_type == 'admin':
-            # Try to find admin by email
-            user = Admin.query.filter_by(email=email_or_id).first()
-        else:
-            # Try to find student by email first
+        # First, try to find admin by email
+        user = Admin.query.filter_by(email=email_or_id).first()
+        
+        # If no admin found, try to find student by email
+        if not user:
             user = User.query.filter_by(email=email_or_id).first()
-            
-            # If not found by email, try by student ID
-            if not user:
-                try:
-                    student_id = int(email_or_id)
-                    user = User.query.filter_by(student_id=student_id).first()
-                except ValueError:
-                    # Not a valid number, skip ID lookup
-                    pass
+        
+        # If still not found, try by student ID
+        if not user:
+            try:
+                student_id = int(email_or_id)
+                user = User.query.filter_by(student_id=student_id).first()
+            except ValueError:
+                # Not a valid number, skip ID lookup
+                pass
         
         # Direct password comparison (plain text)
         # TODO: Implement password hashing for security
