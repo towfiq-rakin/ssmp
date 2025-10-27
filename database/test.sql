@@ -61,7 +61,6 @@ insert into students (id, reg_no, dept_id, name, session, email, password) value
 (23524202128,104201230128,1, 'MASNOON TAHIM SIJAN', '2022-2023', '23524202128@student.bup.edu.bd', 'admin'),
 (23524202129,104201230129,1, 'ABDUL HAKIM SHIFAT', '2022-2023', '23524202129@student.bup.edu.bd', 'admin'),
 (23524202130,104201230130,1, 'TAMIM SHARIAR', '2022-2023', '23524202130@student.bup.edu.bd', 'admin'),
-(23524202131,104201230131,1, 'TOWFIQ OMAR RAKIN', '2022-2023', '23524202131@student.bup.edu.bd', 'admin'),
 (23524202133,104201230133,1, 'TAHIA ZAIMA', '2022-2023', '23524202133@student.bup.edu.bd', 'admin'),
 (23524202134,104201230134,1, 'TABIDA AHMED SUMAIYA', '2022-2023', '23524202134@student.bup.edu.bd', 'admin'),
 (23524202135,104201230135,1, 'ABID HASAN ZIDEN', '2022-2023', '23524202135@student.bup.edu.bd', 'admin'),

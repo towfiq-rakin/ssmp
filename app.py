@@ -30,7 +30,7 @@ class Department(db.Model):
 class User(UserMixin, db.Model):
     __tablename__ = 'students'
     
-    id = db.Column(db.BigInteger, primary_key=True)
+    student_id = db.Column(db.BigInteger, primary_key=True)
     reg_no = db.Column(db.BigInteger, unique=True, nullable=False)
     dept_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -39,6 +39,10 @@ class User(UserMixin, db.Model):
     password = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.TIMESTAMP)
     updated_at = db.Column(db.TIMESTAMP)
+    
+    # Override get_id for Flask-Login since we use student_id instead of id
+    def get_id(self):
+        return str(self.student_id)
     
     # Relationship with department
     def get_department(self):
@@ -76,7 +80,7 @@ def login():
         if not user:
             try:
                 student_id = int(email_or_id)
-                user = User.query.filter_by(id=student_id).first()
+                user = User.query.filter_by(student_id=student_id).first()
             except ValueError:
                 # Not a valid number, skip ID lookup
                 pass
@@ -98,7 +102,7 @@ def dashboard():
     department = current_user.get_department()
     
     # Get academic record
-    academic_record = AcademicRecord.query.filter_by(student_id=current_user.id).first()
+    academic_record = AcademicRecord.query.filter_by(student_id=current_user.student_id).first()
     
     return render_template('dashboard.html', 
                          user=current_user, 
