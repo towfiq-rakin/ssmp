@@ -20,6 +20,28 @@ class Department(db.Model):
         return f'<Department {self.name}>'
 
 
+class Admin(UserMixin, db.Model):
+    """Admin Model"""
+    __tablename__ = 'admins'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    dept_id = db.Column(db.Integer, nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.TIMESTAMP)
+    updated_at = db.Column(db.TIMESTAMP)
+    
+    def get_id(self):
+        return f'admin_{self.id}'
+    
+    def get_department(self):
+        return Department.query.get(self.dept_id)
+    
+    def __repr__(self):
+        return f'<Admin {self.name}>'
+
+
 class User(UserMixin, db.Model):
     """User Model - mapped to students table"""
     __tablename__ = 'students'
@@ -36,7 +58,7 @@ class User(UserMixin, db.Model):
     
     # Override get_id for Flask-Login since we use student_id instead of id
     def get_id(self):
-        return str(self.student_id)
+        return f'student_{self.student_id}'
     
     # Relationship with department
     def get_department(self):
