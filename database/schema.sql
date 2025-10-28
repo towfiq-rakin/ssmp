@@ -260,3 +260,6 @@ insert into academic_records (reg_no, student_id, cgpa, gpa, semester) values
 ('104201230148', '23524202148', 3.11, 3.38, '5th semester'),
 ('104201230149', '23524202149', 3.13, 3.49, '5th semester'),
 ('104201230151', '23524202151', 2.94, 2.84, '5th semester');
+
+insert into admins (name, dept_id, email, password) values
+('Admin', 1, 'admin@bupeedu.bd', 'admin');

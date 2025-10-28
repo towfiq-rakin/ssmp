@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="dashboard-container">
-    <h1>Admin Dashboard</h1>
+    <h1 class="page-title">Admin Dashboard</h1>
     
     <div class="student-info-card">
         <h2>Admin Information</h2>
@@ -28,69 +28,6 @@
             </div>
             {% endif %}
         </div>
-    </div>
-    
-    <div class="student-info-card">
-        <h2>Students</h2>
-        
-        <!-- Search Form -->
-        <div class="search-container">
-            <form method="GET" action="{{ url_for('main.admin_dashboard') }}">
-                <div class="search-box">
-                    <input type="text" 
-                           name="search" 
-                           id="search" 
-                           placeholder="Search by name, ID, email, or session..." 
-                           value="{{ search_query if search_query else '' }}">
-                    <button type="submit" class="btn btn-search">Search</button>
-                    {% if search_query %}
-                    <a href="{{ url_for('main.admin_dashboard') }}" class="btn btn-clear">Clear</a>
-                    {% endif %}
-                </div>
-            </form>
-        </div>
-        
-        <!-- Students Table -->
-        {% if students %}
-        <div class="table-container">
-            <table class="students-table">
-                <thead>
-                    <tr>
-                        <th>Student ID</th>
-                        <th>Registration No</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Session</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for student in students %}
-                    <tr>
-                        <td>{{ student.student_id }}</td>
-                        <td>{{ student.reg_no }}</td>
-                        <td>{{ student.name }}</td>
-                        <td>{{ student.email }}</td>
-                        <td>{{ student.session }}</td>
-                        <td>
-                            <a href="{{ url_for('main.admin_view_student', student_id=student.student_id) }}" 
-                               class="btn btn-view">View Details</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <p class="student-count">Total Students: {{ students|length }}</p>
-        {% else %}
-        <p class="no-results">
-            {% if search_query %}
-            No students found matching "{{ search_query }}".
-            {% else %}
-            No students in your department.
-            {% endif %}
-        </p>
-        {% endif %}
     </div>
 </div>
 {% endblock %}

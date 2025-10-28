@@ -13,7 +13,9 @@
             <ul class="nav-menu">
                 <li><a href="{{ url_for('main.home') }}">Home</a></li>
                 <li><a href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
-                <li><a href="#">Students</a></li>
+                {% if current_user.is_authenticated and current_user.__class__.__name__ == 'Admin' %}
+                <li><a href="{{ url_for('main.admin_students') }}">Students</a></li>
+                {% endif %}
                 <li><a href="#">Departments</a></li>
                 <li><a href="#">Courses</a></li>
             </ul>

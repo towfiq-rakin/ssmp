@@ -41,7 +41,24 @@ def dashboard():
 @main_bp.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
-    """Admin dashboard - displays students from admin's department"""
+    """Admin dashboard - displays admin information"""
+    # Check if user is admin
+    if not isinstance(current_user, Admin):
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get department info
+    department = current_user.get_department()
+    
+    return render_template('admin_dashboard.html',
+                         admin=current_user,
+                         department=department)
+
+
+@main_bp.route('/admin/students')
+@login_required
+def admin_students():
+    """Admin students page - displays and searches students from admin's department"""
     # Check if user is admin
     if not isinstance(current_user, Admin):
         flash('Access denied. Admin privileges required.', 'danger')
@@ -49,9 +66,6 @@ def admin_dashboard():
     
     # Get search query
     search_query = request.args.get('search', '').strip()
-    
-    # Get department info
-    department = current_user.get_department()
     
     # Base query for students in admin's department
     students_query = User.query.filter_by(dept_id=current_user.dept_id)
@@ -71,9 +85,8 @@ def admin_dashboard():
     # Get all students
     students = students_query.order_by(User.student_id).all()
     
-    return render_template('admin_dashboard.html',
+    return render_template('admin_students.html',
                          admin=current_user,
-                         department=department,
                          students=students,
                          search_query=search_query)
 
@@ -92,12 +105,12 @@ def admin_view_student(student_id):
     
     if not student:
         flash('Student not found.', 'danger')
-        return redirect(url_for('main.admin_dashboard'))
+        return redirect(url_for('main.admin_students'))
     
     # Check if student is from admin's department
     if student.dept_id != current_user.dept_id:
         flash('Access denied. You can only view students from your department.', 'danger')
-        return redirect(url_for('main.admin_dashboard'))
+        return redirect(url_for('main.admin_students'))
     
     # Get student's department and academic record
     department = student.get_department()
