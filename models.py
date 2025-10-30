@@ -80,3 +80,19 @@ class AcademicRecord(db.Model):
     
     def __repr__(self):
         return f'<AcademicRecord {self.reg_no}>'
+
+
+class Scholarship(db.Model):
+    """Scholarship Model"""
+    __tablename__ = 'scholarships'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    student_id = db.Column(db.BigInteger, nullable=False)
+    student_name = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(100), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    semester = db.Column(db.String(50), nullable=False)
+    awarded_at = db.Column(db.TIMESTAMP)
+    
+    def __repr__(self):
+        return f'<Scholarship {self.student_name} - {self.type}>'

@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Scholarships - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">Scholarship Management</h1>
+    
+    <div class="student-info-card">
+        <div class="budget-info">
+            <div class="budget-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ department.name }}</span>
+            </div>
+            <div class="budget-item">
+                <span class="info-label">Total Budget Remaining:</span>
+                <span class="info-value budget-amount" id="remaining-budget">৳{{ "{:,.2f}".format(department.budget) }}</span>
+            </div>
+        </div>
+        
+        <!-- Eligible Students Table -->
+        {% if eligible_students %}
+        <div class="table-container">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>GPA</th>
+                        <th>Scholarship Type</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="scholarship-table-body">
+                    {% for item in eligible_students %}
+                    <tr id="student-row-{{ item.student.student_id }}">
+                        <td>{{ item.student.student_id }}</td>
+                        <td>{{ item.student.name }}</td>
+                        <td>{{ item.academic_record.gpa }}</td>
+                        <td>{{ item.scholarship_type }}</td>
+                        <td>৳{{ "{:,.2f}".format(item.scholarship_amount) }}</td>
+                        <td>
+                            <a href="{{ url_for('main.admin_view_scholarship', student_id=item.student.student_id) }}" 
+                               class="btn btn-view">Details</a>
+                            <button class="btn btn-approve" 
+                                    onclick="approveScholarship({{ item.student.student_id }}, {{ item.scholarship_amount }})">
+                                Approve
+                            </button>
+                            <button class="btn btn-reject" 
+                                    onclick="rejectScholarship({{ item.student.student_id }}, {{ item.scholarship_amount }})">
+                                Reject
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="scholarship-summary">
+            <div class="summary-item">
+                <span class="info-label">Total Students Eligible:</span>
+                <span class="info-value" id="total-students">{{ eligible_students|length }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="info-label">Total Budget to Award:</span>
+                <span class="info-value budget-amount" id="total-award">৳{{ "{:,.2f}".format(total_scholarship_amount) }}</span>
+            </div>
+        </div>
+        
+        <div class="pending-summary" id="pending-amount" style="display: none;">
+            <div class="summary-item">
+                <span class="info-label">⏳ Pending Approval Amount (Not Saved):</span>
+                <span class="info-value budget-amount pending-value">৳0.00</span>
+            </div>
+        </div>
+        
+        <div class="approve-all-section">
+            <button class="btn btn-approve-all" onclick="approveAll()">
+                Approve All
+            </button>
+            <button class="btn btn-update" onclick="updateDatabase()">
+                Update Database
+            </button>
+        </div>
+        {% else %}
+        <p class="no-results">No students eligible for scholarships at this time.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let totalAwardAmount = parseFloat('{{ total_scholarship_amount }}');
+let remainingBudget = parseFloat('{{ department.budget }}');
+let approvedStudents = []; // Track students approved but not yet saved to database
+
+function approveScholarship(studentId, amount) {
+    if (!confirm('Are you sure you want to approve this scholarship?')) {
+        return;
+    }
+    
+    // Add to approved list
+    const row = document.getElementById(`student-row-${studentId}`);
+    if (!row) return;
+    
+    // Mark as approved visually
+    row.style.backgroundColor = '#c8e6c9';
+    const actionCell = row.cells[row.cells.length - 1];
+    actionCell.innerHTML = '<span class="approved-badge">✓ Approved (Not Saved)</span>';
+    
+    // Add to approved list
+    approvedStudents.push({
+        studentId: studentId,
+        amount: amount
+    });
+    
+    // Update totals
+    updateLocalTotals();
+}
+
+function rejectScholarship(studentId, amount) {
+    if (!confirm('Are you sure you want to reject this scholarship?')) {
+        return;
+    }
+    
+    // Remove from approved list if it was there
+    approvedStudents = approvedStudents.filter(s => s.studentId !== studentId);
+    
+    // Remove row
+    const row = document.getElementById(`student-row-${studentId}`);
+    row.remove();
+    
+    // Update totals
+    totalAwardAmount -= amount;
+    updateLocalTotals();
+}
+
+function updateLocalTotals() {
+    // Calculate pending amount from approved students
+    const pendingAmount = approvedStudents.reduce((sum, s) => sum + s.amount, 0);
+    
+    // Update display
+    document.getElementById('total-award').textContent = '৳' + totalAwardAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    // Update student count
+    const tableBody = document.getElementById('scholarship-table-body');
+    const rowCount = tableBody.getElementsByTagName('tr').length;
+    document.getElementById('total-students').textContent = rowCount;
+    
+    // Show pending amount if any
+    const pendingDiv = document.getElementById('pending-amount');
+    if (pendingAmount > 0) {
+        pendingDiv.style.display = 'block';
+        pendingDiv.querySelector('.pending-value').textContent = '৳' + pendingAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    } else {
+        pendingDiv.style.display = 'none';
+    }
+}
+
+function approveAll() {
+    if (!confirm('Are you sure you want to approve all eligible scholarships?')) {
+        return;
+    }
+    
+    const tableBody = document.getElementById('scholarship-table-body');
+    const rows = tableBody.getElementsByTagName('tr');
+    
+    // Approve all rows
+    for (let row of rows) {
+        const studentId = parseInt(row.id.replace('student-row-', ''));
+        const amountText = row.cells[4].textContent.replace('৳', '').replace(',', '');
+        const amount = parseFloat(amountText);
+        
+        // Check if not already approved
+        if (!approvedStudents.find(s => s.studentId === studentId)) {
+            // Mark as approved visually
+            row.style.backgroundColor = '#c8e6c9';
+            const actionCell = row.cells[row.cells.length - 1];
+            actionCell.innerHTML = '<span class="approved-badge">✓ Approved (Not Saved)</span>';
+            
+            // Add to approved list
+            approvedStudents.push({
+                studentId: studentId,
+                amount: amount
+            });
+        }
+    }
+    
+    updateLocalTotals();
+    alert('All scholarships marked as approved. Click "Update Database" to save changes.');
+}
+
+function updateDatabase() {
+    if (approvedStudents.length === 0) {
+        alert('No scholarships to update. Please approve some scholarships first.');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to save ${approvedStudents.length} approved scholarship(s) to the database?`)) {
+        return;
+    }
+    
+    // Send approved students to backend
+    fetch('/admin/scholarship/approve-multiple', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            studentIds: approvedStudents.map(s => s.studentId)
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            // Reload page to show updated list
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating the database.');
+    });
+}
+</script>
+
+<style>
+.budget-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.budget-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.budget-amount {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2c5f2d;
+}
+
+.scholarship-summary {
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background-color: #e8f5e9;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.approve-all-section {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-approve-all {
+    background-color: #2c5f2d;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-approve-all:hover {
+    background-color: #1e4620;
+}
+
+.btn-update {
+    background-color: #1976d2;
+    color: white;
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-update:hover {
+    background-color: #1565c0;
+}
+
+.btn-approve {
+    background-color: #4caf50;
+    color: white;
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-approve:hover {
+    background-color: #45a049;
+}
+
+.btn-reject {
+    background-color: #f44336;
+    color: white;
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-reject:hover {
+    background-color: #da190b;
+}
+
+.approved-badge {
+    background-color: #4caf50;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.pending-summary {
+    padding: 15px;
+    background-color: #fff3cd;
+    border-left: 5px solid #ffc107;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.pending-summary .info-label {
+    color: #856404;
+    font-weight: bold;
+}
+
+.pending-summary .budget-amount {
+    color: #856404;
+}
+</style>
+{% endblock %}

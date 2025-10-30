@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Scholarship Details - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="back-nav">
+        <a href="{{ url_for('main.admin_scholarships') }}" class="btn btn-back">← Back to Scholarships</a>
+    </div>
+
+    <h1 class="page-title">Scholarship Details</h1>
+
+    <div class="student-info-card">
+        <h2>Personal Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Student ID:</span>
+                <span class="info-value">{{ student.student_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Registration No:</span>
+                <span class="info-value">{{ student.reg_no }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Name:</span>
+                <span class="info-value">{{ student.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ student.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Session:</span>
+                <span class="info-value">{{ student.session }}</span>
+            </div>
+            {% if department %}
+            <div class="info-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ department.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Faculty:</span>
+                <span class="info-value">{{ department.faculty }}</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if academic_record %}
+    <div class="student-info-card">
+        <h2>Academic Record</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">CGPA:</span>
+                <span class="info-value">{{ academic_record.cgpa }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Current GPA:</span>
+                <span class="info-value">{{ academic_record.gpa }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Semester:</span>
+                <span class="info-value">{{ academic_record.semester }}</span>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="student-info-card">
+        <h2>Academic Record</h2>
+        <p class="no-results">No academic record found for this student.</p>
+    </div>
+    {% endif %}
+    
+    {% if scholarship_type %}
+    <div class="student-info-card scholarship-card">
+        <h2>Scholarship Eligibility</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Scholarship Type:</span>
+                <span class="info-value scholarship-type">{{ scholarship_type }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Scholarship Amount:</span>
+                <span class="info-value scholarship-amount">৳{{ "{:,.2f}".format(scholarship_amount) }}</span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn btn-approve-large" onclick="approveScholarship()">
+                Approve Scholarship
+            </button>
+            <button class="btn btn-reject-large" onclick="rejectScholarship()">
+                Reject Scholarship
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="student-info-card">
+        <h2>Scholarship Eligibility</h2>
+        <p class="no-results">This student is not eligible for scholarship based on current GPA.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function approveScholarship() {
+    if (!confirm('Are you sure you want to approve this scholarship?')) {
+        return;
+    }
+    
+    fetch('/admin/scholarship/approve/{{ student.student_id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "{{ url_for('main.admin_scholarships') }}";
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while approving the scholarship.');
+    });
+}
+
+function rejectScholarship() {
+    if (!confirm('Are you sure you want to reject this scholarship?')) {
+        return;
+    }
+    
+    alert('Scholarship rejected.');
+    window.location.href = "{{ url_for('main.admin_scholarships') }}";
+}
+</script>
+
+<style>
+.scholarship-card {
+    background-color: #e8f5e9;
+    border-left: 5px solid #4caf50;
+}
+
+.scholarship-type {
+    font-weight: bold;
+    color: #2c5f2d;
+    font-size: 1.2em;
+}
+
+.scholarship-amount {
+    font-weight: bold;
+    color: #2c5f2d;
+    font-size: 1.3em;
+}
+
+.action-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-approve-large,
+.btn-reject-large {
+    padding: 12px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-approve-large {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-approve-large:hover {
+    background-color: #45a049;
+}
+
+.btn-reject-large {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-reject-large:hover {
+    background-color: #da190b;
+}
+</style>
+{% endblock %}
