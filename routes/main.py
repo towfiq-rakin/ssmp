@@ -38,6 +38,32 @@ def dashboard():
                          academic_record=academic_record)
 
 
+@main_bp.route('/scholarships')
+@login_required
+def student_scholarships():
+    """Student scholarships page - displays awarded scholarships or eligibility message"""
+    # Check if user is admin
+    if isinstance(current_user, Admin):
+        return redirect(url_for('main.admin_scholarships'))
+    
+    # Get academic record
+    academic_record = AcademicRecord.query.filter_by(student_id=current_user.student_id).first()
+    
+    # Check eligibility based on GPA (not CGPA)
+    is_eligible = False
+    if academic_record and academic_record.gpa >= 3.5:
+        is_eligible = True
+    
+    # Get scholarships awarded to this student
+    scholarships = Scholarship.query.filter_by(student_id=current_user.student_id).order_by(Scholarship.awarded_at.desc()).all()
+    
+    return render_template('student_scholarships.html',
+                         user=current_user,
+                         academic_record=academic_record,
+                         is_eligible=is_eligible,
+                         scholarships=scholarships)
+
+
 @main_bp.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
@@ -121,6 +147,66 @@ def admin_view_student(student_id):
                          student=student,
                          department=department,
                          academic_record=academic_record)
+
+
+@main_bp.route('/admin/student/<int:student_id>/academic-record/update', methods=['POST'])
+@login_required
+def update_academic_record(student_id):
+    """Update student's academic record"""
+    # Check if user is admin
+    if not isinstance(current_user, Admin):
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Get student
+    student = User.query.filter_by(student_id=student_id).first()
+    
+    if not student:
+        return jsonify({'success': False, 'message': 'Student not found'}), 404
+    
+    # Check if student is from admin's department
+    if student.dept_id != current_user.dept_id:
+        return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Get data from request
+    data = request.get_json()
+    cgpa = data.get('cgpa')
+    gpa = data.get('gpa')
+    semester = data.get('semester')
+    
+    # Validate inputs
+    if cgpa is None or gpa is None or not semester:
+        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    
+    try:
+        cgpa = float(cgpa)
+        gpa = float(gpa)
+    except ValueError:
+        return jsonify({'success': False, 'message': 'Invalid CGPA or GPA value'}), 400
+    
+    # Validate ranges
+    if cgpa < 0 or cgpa > 4:
+        return jsonify({'success': False, 'message': 'CGPA must be between 0.00 and 4.00'}), 400
+    
+    if gpa < 0 or gpa > 4:
+        return jsonify({'success': False, 'message': 'GPA must be between 0.00 and 4.00'}), 400
+    
+    # Get academic record
+    academic_record = AcademicRecord.query.filter_by(student_id=student_id).first()
+    
+    if not academic_record:
+        return jsonify({'success': False, 'message': 'Academic record not found'}), 404
+    
+    # Update academic record
+    academic_record.cgpa = cgpa
+    academic_record.gpa = gpa
+    academic_record.semester = semester
+    
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Academic record updated successfully'
+    })
 
 
 @main_bp.route('/admin/scholarships')

@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block title %}My Scholarships - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">My Scholarships</h1>
+    
+    {% if not is_eligible %}
+    <!-- Not Eligible Message -->
+    <div class="not-eligible-card">
+        <div class="not-eligible-icon">⚠️</div>
+        <h2>Scholarship & Stipend Eligibility</h2>
+        <p class="not-eligible-message">
+            Sorry, you are not currently eligible for scholarships or stipends.
+        </p>
+        <div class="eligibility-info">
+            <p><strong>Minimum GPA Required:</strong> 3.50</p>
+            {% if academic_record %}
+            <p><strong>Your Current GPA:</strong> {{ academic_record.gpa }}</p>
+            {% else %}
+            <p><strong>Your Current GPA:</strong> No academic record found</p>
+            {% endif %}
+        </div>
+        <div class="encouragement">
+            <p>💪 Keep working hard! Maintain a GPA of 3.50 or above to become eligible for:</p>
+            <ul>
+                <li>🏆 <strong>Chancellor Scholarship</strong> - ৳15,000 (GPA ≥ 3.9)</li>
+                <li>🎓 <strong>BUP Scholarship</strong> - ৳9,000 (GPA ≥ 3.8)</li>
+            </ul>
+        </div>
+    </div>
+    {% else %}
+    <!-- Eligible - Show Scholarships -->
+    <div class="student-info-card">
+        <div class="eligibility-banner">
+            <span class="eligible-badge">✓ Eligible for Scholarships</span>
+            <span class="cgpa-display">Current GPA: {{ academic_record.gpa }}</span>
+        </div>
+        
+        {% if scholarships %}
+        <div class="scholarships-section">
+            <h2>Awarded Scholarships</h2>
+            {% for scholarship in scholarships %}
+            <div class="scholarship-item">
+                <div class="scholarship-header">
+                    <h3 class="scholarship-type">{{ scholarship.type }}</h3>
+                    <span class="scholarship-amount">৳{{ "{:,.2f}".format(scholarship.amount) }}</span>
+                </div>
+                <div class="scholarship-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Semester:</span>
+                        <span class="detail-value">{{ scholarship.semester }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Awarded On:</span>
+                        <span class="detail-value">{{ scholarship.awarded_at.strftime('%B %d, %Y') if scholarship.awarded_at else 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="scholarship-summary">
+                <div class="summary-row">
+                    <span class="summary-label">Total Scholarships Received:</span>
+                    <span class="summary-value">{{ scholarships|length }}</span>
+                </div>
+                <div class="summary-row">
+                    <span class="summary-label">Total Amount:</span>
+                    <span class="summary-value total-amount">৳{{ "{:,.2f}".format(scholarships|sum(attribute='amount')) }}</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="no-scholarships">
+            <div class="info-icon">ℹ️</div>
+            <p class="info-message">You have not been awarded any scholarships yet.</p>
+            <div class="scholarship-criteria">
+                <h3>Available Scholarships:</h3>
+                <div class="criteria-list">
+                    <div class="criteria-item">
+                        <h4>🏆 Chancellor Scholarship</h4>
+                        <p>Amount: <strong>৳15,000</strong></p>
+                        <p>Requirement: GPA ≥ 3.9</p>
+                    </div>
+                    <div class="criteria-item">
+                        <h4>🎓 BUP Scholarship</h4>
+                        <p>Amount: <strong>৳9,000</strong></p>
+                        <p>Requirement: GPA ≥ 3.8</p>
+                    </div>
+                </div>
+                <p class="note">Your scholarship eligibility is evaluated automatically based on your GPA each semester.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Not Eligible Styles */
+.not-eligible-card {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+    border: 2px solid #ff6b6b;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.not-eligible-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+.not-eligible-card h2 {
+    color: #d32f2f;
+    margin-bottom: 20px;
+}
+
+.not-eligible-message {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.eligibility-info {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    border-left: 4px solid #ff6b6b;
+}
+
+.eligibility-info p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: #333;
+}
+
+.encouragement {
+    background-color: #fff9e6;
+    border-radius: 8px;
+    padding: 25px;
+    margin-top: 30px;
+    border: 2px dashed #ffc107;
+}
+
+.encouragement p {
+    margin-bottom: 15px;
+    font-size: 1.05em;
+    color: #333;
+}
+
+.encouragement ul {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    max-width: 500px;
+    margin: 20px auto 0;
+}
+
+.encouragement li {
+    padding: 12px;
+    margin: 10px 0;
+    background-color: white;
+    border-radius: 6px;
+    border-left: 4px solid #4caf50;
+}
+
+/* Eligible Styles */
+.eligibility-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    padding: 15px 25px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    border: 2px solid #4caf50;
+}
+
+.eligible-badge {
+    background-color: #4caf50;
+    color: white;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.cgpa-display {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #2c5f2d;
+}
+
+.scholarships-section {
+    margin-top: 20px;
+}
+
+.scholarships-section h2 {
+    color: #2c5f2d;
+    margin-bottom: 20px;
+}
+
+.scholarship-item {
+    background-color: #e8f5e9;
+    border-left: 5px solid #4caf50;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.scholarship-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #4caf50;
+}
+
+.scholarship-type {
+    color: #2c5f2d;
+    font-size: 1.3em;
+    margin: 0;
+    font-weight: bold;
+}
+
+.scholarship-amount {
+    color: #2c5f2d;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.scholarship-details {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.detail-value {
+    color: #333;
+}
+
+.scholarship-summary {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 2px solid #4caf50;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 1.1em;
+}
+
+.summary-label {
+    font-weight: 600;
+    color: #555;
+}
+
+.summary-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.total-amount {
+    color: #2c5f2d;
+    font-size: 1.3em;
+}
+
+/* No Scholarships Yet */
+.no-scholarships {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.info-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+.info-message {
+    font-size: 1.2em;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.scholarship-criteria {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 30px;
+    margin-top: 30px;
+}
+
+.scholarship-criteria h3 {
+    color: #2c5f2d;
+    margin-bottom: 20px;
+}
+
+.criteria-list {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.criteria-item {
+    background-color: white;
+    border: 2px solid #4caf50;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 250px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.criteria-item h4 {
+    color: #2c5f2d;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.criteria-item p {
+    margin: 8px 0;
+    color: #555;
+}
+
+.criteria-item strong {
+    color: #2c5f2d;
+}
+
+.note {
+    margin-top: 20px;
+    font-style: italic;
+    color: #666;
+    font-size: 0.95em;
+}
+</style>
+{% endblock %}
