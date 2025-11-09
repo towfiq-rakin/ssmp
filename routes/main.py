@@ -4,7 +4,7 @@ Handles home, dashboard, and other general routes
 """
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort, jsonify
 from flask_login import login_required, current_user
-from models import AcademicRecord, Admin, User, Department, Scholarship
+from models import AcademicRecord, Admin, User, Department, Scholarship, Stipend
 from extensions import db
 
 main_bp = Blueprint('main', __name__)
@@ -41,7 +41,7 @@ def dashboard():
 @main_bp.route('/scholarships')
 @login_required
 def student_scholarships():
-    """Student scholarships page - displays awarded scholarships or eligibility message"""
+    """Student scholarships/stipends page - displays awarded scholarships, stipends or eligibility message"""
     # Check if user is admin
     if isinstance(current_user, Admin):
         return redirect(url_for('main.admin_scholarships'))
@@ -49,19 +49,29 @@ def student_scholarships():
     # Get academic record
     academic_record = AcademicRecord.query.filter_by(student_id=current_user.student_id).first()
     
-    # Check eligibility based on GPA (not CGPA)
+    # Check eligibility based on GPA
     is_eligible = False
-    if academic_record and academic_record.gpa >= 3.5:
-        is_eligible = True
+    eligible_for = None  # 'scholarship', 'stipend', or None
     
-    # Get scholarships awarded to this student
+    if academic_record:
+        if academic_record.gpa >= 3.8:
+            is_eligible = True
+            eligible_for = 'scholarship'
+        elif academic_record.gpa >= 3.5:
+            is_eligible = True
+            eligible_for = 'stipend'
+    
+    # Get scholarships and stipends awarded to this student
     scholarships = Scholarship.query.filter_by(student_id=current_user.student_id).order_by(Scholarship.awarded_at.desc()).all()
+    stipends = Stipend.query.filter_by(student_id=current_user.student_id).order_by(Stipend.awarded_at.desc()).all()
     
     return render_template('student_scholarships.html',
                          user=current_user,
                          academic_record=academic_record,
                          is_eligible=is_eligible,
-                         scholarships=scholarships)
+                         eligible_for=eligible_for,
+                         scholarships=scholarships,
+                         stipends=stipends)
 
 
 @main_bp.route('/admin/dashboard')
