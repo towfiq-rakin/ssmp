@@ -75,8 +75,32 @@ class AcademicRecord(db.Model):
     reg_no = db.Column(db.BigInteger, primary_key=True)
     student_id = db.Column(db.BigInteger, nullable=False)
     cgpa = db.Column(db.Float, nullable=False)
-    gpa = db.Column(db.Float, nullable=False)
-    semester = db.Column(db.String(20), nullable=False)
+    semester_1_gpa = db.Column(db.Float, nullable=True)
+    semester_2_gpa = db.Column(db.Float, nullable=True)
+    semester_3_gpa = db.Column(db.Float, nullable=True)
+    semester_4_gpa = db.Column(db.Float, nullable=True)
+    semester_5_gpa = db.Column(db.Float, nullable=True)
+    semester_6_gpa = db.Column(db.Float, nullable=True)
+    semester_7_gpa = db.Column(db.Float, nullable=True)
+    semester_8_gpa = db.Column(db.Float, nullable=True)
+    current_semester = db.Column(db.Integer, nullable=False, default=5)
+    
+    def get_current_gpa(self):
+        """Get GPA for the current semester"""
+        semester_field = f'semester_{self.current_semester}_gpa'
+        return getattr(self, semester_field, None)
+    
+    def calculate_cgpa(self):
+        """Calculate CGPA from all non-null semester GPAs"""
+        gpas = []
+        for i in range(1, 9):
+            gpa = getattr(self, f'semester_{i}_gpa')
+            if gpa is not None:
+                gpas.append(gpa)
+        
+        if gpas:
+            return round(sum(gpas) / len(gpas), 2)
+        return 0.0
     
     def __repr__(self):
         return f'<AcademicRecord {self.reg_no}>'

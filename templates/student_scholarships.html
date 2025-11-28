@@ -17,7 +17,7 @@
         <div class="eligibility-info">
             <p><strong>Minimum GPA Required:</strong> 3.50</p>
             {% if academic_record %}
-            <p><strong>Your Current GPA:</strong> {{ academic_record.gpa }}</p>
+            <p><strong>Your Current GPA:</strong> {{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</p>
             {% else %}
             <p><strong>Your Current GPA:</strong> No academic record found</p>
             {% endif %}
@@ -51,7 +51,7 @@
             {% else %}
             <span class="eligible-badge stipend-badge">✓ Eligible for Stipends</span>
             {% endif %}
-            <span class="cgpa-display">Current GPA: {{ academic_record.gpa }}</span>
+            <span class="cgpa-display">Current GPA: {{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</span>
         </div>
         
         {% if scholarships or stipends %}

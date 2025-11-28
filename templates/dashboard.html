@@ -48,18 +48,64 @@
         <div class="info-grid">
             <div class="info-item">
                 <span class="info-label">CGPA:</span>
-                <span class="info-value">{{ academic_record.cgpa }}</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.cgpa) }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Current GPA:</span>
-                <span class="info-value">{{ academic_record.gpa }}</span>
+                <span class="info-label">Current Semester:</span>
+                <span class="info-value">Semester {{ academic_record.current_semester }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Semester:</span>
-                <span class="info-value">{{ academic_record.semester }}</span>
+                <span class="info-label">Current Semester GPA:</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</span>
             </div>
+        </div>
+        
+        <h3 style="margin-top: 20px;">Semester GPAs</h3>
+        <div class="semester-grid">
+            {% for i in range(1, 9) %}
+            <div class="semester-item">
+                <span class="semester-label">Semester {{ i }}:</span>
+                {% set gpa = academic_record['semester_' ~ i ~ '_gpa'] %}
+                <span class="semester-value">{{ "%.2f"|format(gpa) if gpa else 'N/A' }}</span>
+            </div>
+            {% endfor %}
         </div>
     </div>
     {% endif %}
 </div>
+
+<style>
+.semester-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.semester-item {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.semester-label {
+    font-weight: bold;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.semester-value {
+    font-size: 1.2em;
+    color: #2196f3;
+}
+
+@media (max-width: 768px) {
+    .semester-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
 {% endblock %}

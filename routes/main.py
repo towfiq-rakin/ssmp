@@ -49,15 +49,17 @@ def student_scholarships():
     # Get academic record
     academic_record = AcademicRecord.query.filter_by(student_id=current_user.student_id).first()
     
-    # Check eligibility based on GPA
+    # Check eligibility based on current semester GPA
     is_eligible = False
     eligible_for = None  # 'scholarship', 'stipend', or None
+    current_gpa = None
     
     if academic_record:
-        if academic_record.gpa >= 3.8:
+        current_gpa = academic_record.get_current_gpa()
+        if current_gpa and current_gpa >= 3.8:
             is_eligible = True
             eligible_for = 'scholarship'
-        elif academic_record.gpa >= 3.5:
+        elif current_gpa and current_gpa >= 3.5:
             is_eligible = True
             eligible_for = 'stipend'
     
@@ -179,26 +181,21 @@ def update_academic_record(student_id):
     
     # Get data from request
     data = request.get_json()
-    cgpa = data.get('cgpa')
-    gpa = data.get('gpa')
-    semester = data.get('semester')
+    current_semester = data.get('current_semester')
+    semester_gpas = data.get('semester_gpas', {})
     
     # Validate inputs
-    if cgpa is None or gpa is None or not semester:
-        return jsonify({'success': False, 'message': 'Missing required fields'}), 400
+    if current_semester is None:
+        return jsonify({'success': False, 'message': 'Missing current semester'}), 400
     
     try:
-        cgpa = float(cgpa)
-        gpa = float(gpa)
+        current_semester = int(current_semester)
     except ValueError:
-        return jsonify({'success': False, 'message': 'Invalid CGPA or GPA value'}), 400
+        return jsonify({'success': False, 'message': 'Invalid current semester value'}), 400
     
-    # Validate ranges
-    if cgpa < 0 or cgpa > 4:
-        return jsonify({'success': False, 'message': 'CGPA must be between 0.00 and 4.00'}), 400
-    
-    if gpa < 0 or gpa > 4:
-        return jsonify({'success': False, 'message': 'GPA must be between 0.00 and 4.00'}), 400
+    # Validate current semester range
+    if current_semester < 1 or current_semester > 8:
+        return jsonify({'success': False, 'message': 'Current semester must be between 1 and 8'}), 400
     
     # Get academic record
     academic_record = AcademicRecord.query.filter_by(student_id=student_id).first()
@@ -206,16 +203,35 @@ def update_academic_record(student_id):
     if not academic_record:
         return jsonify({'success': False, 'message': 'Academic record not found'}), 404
     
-    # Update academic record
-    academic_record.cgpa = cgpa
-    academic_record.gpa = gpa
-    academic_record.semester = semester
+    # Update current semester
+    academic_record.current_semester = current_semester
+    
+    # Update semester GPAs
+    for sem_num, gpa_value in semester_gpas.items():
+        try:
+            sem_num = int(sem_num)
+            if gpa_value is not None and gpa_value != '':
+                gpa_value = float(gpa_value)
+                
+                # Validate GPA range
+                if gpa_value < 0 or gpa_value > 4:
+                    return jsonify({'success': False, 'message': f'Semester {sem_num} GPA must be between 0.00 and 4.00'}), 400
+                
+                setattr(academic_record, f'semester_{sem_num}_gpa', gpa_value)
+            else:
+                setattr(academic_record, f'semester_{sem_num}_gpa', None)
+        except (ValueError, AttributeError):
+            return jsonify({'success': False, 'message': f'Invalid GPA value for semester {sem_num}'}), 400
+    
+    # Auto-calculate CGPA
+    academic_record.cgpa = academic_record.calculate_cgpa()
     
     db.session.commit()
     
     return jsonify({
         'success': True,
-        'message': 'Academic record updated successfully'
+        'message': 'Academic record updated successfully',
+        'cgpa': academic_record.cgpa
     })
 
 
@@ -243,21 +259,23 @@ def admin_scholarships():
     for student, academic_record in students:
         scholarship_type = None
         scholarship_amount = 0
+        current_gpa = academic_record.get_current_gpa()
         
-        # Check eligibility based on GPA
-        if academic_record.gpa >= 3.9:
+        # Check eligibility based on current semester GPA
+        if current_gpa and current_gpa >= 3.9:
             scholarship_type = "Chancellor Scholarship"
             scholarship_amount = 15000
-        elif academic_record.gpa >= 3.8:
+        elif current_gpa and current_gpa >= 3.8:
             scholarship_type = "BUP Scholarship"
             scholarship_amount = 9000
         
         # Only add if eligible
         if scholarship_type:
             # Check if already awarded for this semester
+            semester_name = f"Semester {academic_record.current_semester}"
             existing_scholarship = Scholarship.query.filter_by(
                 student_id=student.student_id,
-                semester=academic_record.semester
+                semester=semester_name
             ).first()
             
             if not existing_scholarship:
@@ -269,8 +287,8 @@ def admin_scholarships():
                 })
                 total_scholarship_amount += scholarship_amount
     
-    # Sort eligible students by GPA in descending order (highest first)
-    eligible_students.sort(key=lambda x: x['academic_record'].gpa, reverse=True)
+    # Sort eligible students by current GPA in descending order (highest first)
+    eligible_students.sort(key=lambda x: x['academic_record'].get_current_gpa() or 0, reverse=True)
     
     return render_template('admin_scholarships.html',
                          admin=current_user,
@@ -307,12 +325,14 @@ def admin_view_scholarship(student_id):
     # Calculate scholarship eligibility
     scholarship_type = None
     scholarship_amount = 0
+    current_gpa = None
     
     if academic_record:
-        if academic_record.gpa >= 3.9:
+        current_gpa = academic_record.get_current_gpa()
+        if current_gpa and current_gpa >= 3.9:
             scholarship_type = "Chancellor Scholarship"
             scholarship_amount = 15000
-        elif academic_record.gpa >= 3.8:
+        elif current_gpa and current_gpa >= 3.8:
             scholarship_type = "BUP Scholarship"
             scholarship_amount = 9000
     
@@ -348,20 +368,22 @@ def approve_scholarship(student_id):
     # Calculate scholarship
     scholarship_type = None
     scholarship_amount = 0
+    current_gpa = academic_record.get_current_gpa()
     
-    if academic_record.gpa >= 3.9:
+    if current_gpa and current_gpa >= 3.9:
         scholarship_type = "Chancellor Scholarship"
         scholarship_amount = 15000
-    elif academic_record.gpa >= 3.8:
+    elif current_gpa and current_gpa >= 3.8:
         scholarship_type = "BUP Scholarship"
         scholarship_amount = 9000
     else:
         return jsonify({'success': False, 'message': 'Student not eligible'}), 400
     
     # Check if already awarded
+    semester_name = f"Semester {academic_record.current_semester}"
     existing_scholarship = Scholarship.query.filter_by(
         student_id=student_id,
-        semester=academic_record.semester
+        semester=semester_name
     ).first()
     
     if existing_scholarship:
@@ -378,7 +400,7 @@ def approve_scholarship(student_id):
         student_name=student.name,
         type=scholarship_type,
         amount=scholarship_amount,
-        semester=academic_record.semester
+        semester=semester_name
     )
     
     # Update department budget
@@ -416,21 +438,23 @@ def approve_all_scholarships():
     for student, academic_record in students:
         scholarship_type = None
         scholarship_amount = 0
+        current_gpa = academic_record.get_current_gpa()
         
-        # Check eligibility based on GPA
-        if academic_record.gpa >= 3.9:
+        # Check eligibility based on current semester GPA
+        if current_gpa and current_gpa >= 3.9:
             scholarship_type = "Chancellor Scholarship"
             scholarship_amount = 15000
-        elif academic_record.gpa >= 3.8:
+        elif current_gpa and current_gpa >= 3.8:
             scholarship_type = "BUP Scholarship"
             scholarship_amount = 9000
         
         # Only process if eligible
         if scholarship_type:
             # Check if already awarded for this semester
+            semester_name = f"Semester {academic_record.current_semester}"
             existing_scholarship = Scholarship.query.filter_by(
                 student_id=student.student_id,
-                semester=academic_record.semester
+                semester=semester_name
             ).first()
             
             if not existing_scholarship:
@@ -442,7 +466,7 @@ def approve_all_scholarships():
                         student_name=student.name,
                         type=scholarship_type,
                         amount=scholarship_amount,
-                        semester=academic_record.semester
+                        semester=semester_name
                     )
                     
                     # Update department budget
@@ -503,11 +527,12 @@ def approve_multiple_scholarships():
         # Calculate scholarship
         scholarship_type = None
         scholarship_amount = 0
+        current_gpa = academic_record.get_current_gpa()
         
-        if academic_record.gpa >= 3.9:
+        if current_gpa and current_gpa >= 3.9:
             scholarship_type = "Chancellor Scholarship"
             scholarship_amount = 15000
-        elif academic_record.gpa >= 3.8:
+        elif current_gpa and current_gpa >= 3.8:
             scholarship_type = "BUP Scholarship"
             scholarship_amount = 9000
         else:
@@ -515,9 +540,10 @@ def approve_multiple_scholarships():
             continue
         
         # Check if already awarded
+        semester_name = f"Semester {academic_record.current_semester}"
         existing_scholarship = Scholarship.query.filter_by(
             student_id=student_id,
-            semester=academic_record.semester
+            semester=semester_name
         ).first()
         
         if existing_scholarship:
@@ -535,7 +561,7 @@ def approve_multiple_scholarships():
             student_name=student.name,
             type=scholarship_type,
             amount=scholarship_amount,
-            semester=academic_record.semester
+            semester=semester_name
         )
         
         # Update department budget

@@ -37,7 +37,7 @@
                     <tr id="student-row-{{ item.student.student_id }}">
                         <td>{{ item.student.student_id }}</td>
                         <td>{{ item.student.name }}</td>
-                        <td>{{ item.academic_record.gpa }}</td>
+                        <td>{{ "%.2f"|format(item.academic_record.get_current_gpa()) if item.academic_record.get_current_gpa() else 'N/A' }}</td>
                         <td>{{ item.scholarship_type }}</td>
                         <td>৳{{ "{:,.2f}".format(item.scholarship_amount) }}</td>
                         <td>

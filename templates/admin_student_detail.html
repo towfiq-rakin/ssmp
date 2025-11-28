@@ -51,17 +51,28 @@
         <h2>Academic Record</h2>
         <div class="info-grid">
             <div class="info-item">
-                <span class="info-label">CGPA:</span>
-                <span class="info-value">{{ academic_record.cgpa }}</span>
+                <span class="info-label">CGPA (Auto-calculated):</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.cgpa) }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Current GPA:</span>
-                <span class="info-value">{{ academic_record.gpa }}</span>
+                <span class="info-label">Current Semester:</span>
+                <span class="info-value">Semester {{ academic_record.current_semester }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Semester:</span>
-                <span class="info-value">{{ academic_record.semester }}</span>
+                <span class="info-label">Current Semester GPA:</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</span>
             </div>
+        </div>
+        
+        <h3 style="margin-top: 20px;">Semester GPAs</h3>
+        <div class="semester-grid">
+            {% for i in range(1, 9) %}
+            <div class="semester-item">
+                <span class="semester-label">Semester {{ i }}:</span>
+                {% set gpa = academic_record['semester_' ~ i ~ '_gpa'] %}
+                <span class="semester-value">{{ "%.2f"|format(gpa) if gpa else 'N/A' }}</span>
+            </div>
+            {% endfor %}
         </div>
         
         <div class="update-section">
@@ -73,35 +84,30 @@
             <form id="academic-update-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="cgpa">CGPA:</label>
-                        <input type="number" id="cgpa" name="cgpa" 
-                               min="0" max="4" step="0.01" 
-                               value="{{ academic_record.cgpa }}" required>
-                        <span class="help-text">Range: 0.00 - 4.00</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="gpa">Current GPA:</label>
-                        <input type="number" id="gpa" name="gpa" 
-                               min="0" max="4" step="0.01" 
-                               value="{{ academic_record.gpa }}" required>
-                        <span class="help-text">Range: 0.00 - 4.00</span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="semester">Semester:</label>
-                        <select id="semester" name="semester" required>
-                            <option value="Semester 1" {% if academic_record.semester == 'Semester 1' %}selected{% endif %}>Semester 1</option>
-                            <option value="Semester 2" {% if academic_record.semester == 'Semester 2' %}selected{% endif %}>Semester 2</option>
-                            <option value="Semester 3" {% if academic_record.semester == 'Semester 3' %}selected{% endif %}>Semester 3</option>
-                            <option value="Semester 4" {% if academic_record.semester == 'Semester 4' %}selected{% endif %}>Semester 4</option>
-                            <option value="Semester 5" {% if academic_record.semester == 'Semester 5' %}selected{% endif %}>Semester 5</option>
-                            <option value="Semester 6" {% if academic_record.semester == 'Semester 6' %}selected{% endif %}>Semester 6</option>
-                            <option value="Semester 7" {% if academic_record.semester == 'Semester 7' %}selected{% endif %}>Semester 7</option>
-                            <option value="Semester 8" {% if academic_record.semester == 'Semester 8' %}selected{% endif %}>Semester 8</option>
+                        <label for="current-semester">Current Semester:</label>
+                        <select id="current-semester" name="current_semester" required>
+                            {% for i in range(1, 9) %}
+                            <option value="{{ i }}" {% if academic_record.current_semester == i %}selected{% endif %}>Semester {{ i }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                 </div>
+                
+                <h4>Semester GPAs</h4>
+                <div class="semester-inputs-grid">
+                    {% for i in range(1, 9) %}
+                    <div class="form-group">
+                        <label for="semester-{{ i }}-gpa">Semester {{ i }} GPA:</label>
+                        {% set gpa = academic_record['semester_' ~ i ~ '_gpa'] %}
+                        <input type="number" id="semester-{{ i }}-gpa" name="semester_{{ i }}_gpa" 
+                               min="0" max="4" step="0.01" 
+                               value="{{ '%.2f'|format(gpa) if gpa else '' }}" 
+                               placeholder="Not set">
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="help-text" style="margin-top: 10px;">Leave blank for semesters not yet completed. CGPA will be auto-calculated from non-blank semesters.</p>
+                
                 <div class="form-actions">
                     <button type="submit" class="btn btn-save">Save Changes</button>
                     <button type="button" class="btn btn-cancel" onclick="hideUpdateForm()">Cancel</button>
@@ -131,22 +137,30 @@ function hideUpdateForm() {
 document.getElementById('academic-update-form').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const cgpa = parseFloat(document.getElementById('cgpa').value);
-    const gpa = parseFloat(document.getElementById('gpa').value);
-    const semester = document.getElementById('semester').value;
+    const currentSemester = parseInt(document.getElementById('current-semester').value);
     
-    // Validate CGPA and GPA
-    if (cgpa < 0 || cgpa > 4) {
-        alert('CGPA must be between 0.00 and 4.00');
-        return;
+    // Collect semester GPAs
+    const semesterGpas = {};
+    for (let i = 1; i <= 8; i++) {
+        const gpaInput = document.getElementById(`semester-${i}-gpa`);
+        const value = gpaInput.value.trim();
+        
+        if (value !== '') {
+            const gpa = parseFloat(value);
+            
+            // Validate GPA
+            if (gpa < 0 || gpa > 4) {
+                alert(`Semester ${i} GPA must be between 0.00 and 4.00`);
+                return;
+            }
+            
+            semesterGpas[i] = gpa;
+        } else {
+            semesterGpas[i] = null;
+        }
     }
     
-    if (gpa < 0 || gpa > 4) {
-        alert('GPA must be between 0.00 and 4.00');
-        return;
-    }
-    
-    if (!confirm('Are you sure you want to update this academic record?')) {
+    if (!confirm('Are you sure you want to update this academic record? CGPA will be auto-calculated.')) {
         return;
     }
     
@@ -157,15 +171,14 @@ document.getElementById('academic-update-form').addEventListener('submit', funct
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            cgpa: cgpa,
-            gpa: gpa,
-            semester: semester
+            current_semester: currentSemester,
+            semester_gpas: semesterGpas
         })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(data.message);
+            alert(data.message + '\nNew CGPA: ' + data.cgpa.toFixed(2));
             window.location.reload();
         } else {
             alert('Error: ' + data.message);
@@ -210,6 +223,12 @@ document.getElementById('academic-update-form').addEventListener('submit', funct
     color: #333;
 }
 
+.update-form h4 {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    color: #555;
+}
+
 .form-row {
     display: flex;
     gap: 20px;
@@ -246,6 +265,39 @@ document.getElementById('academic-update-form').addEventListener('submit', funct
     font-size: 0.85em;
     color: #666;
     margin-top: 5px;
+}
+
+.semester-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.semester-item {
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.semester-label {
+    font-weight: bold;
+    color: #555;
+    font-size: 0.9em;
+}
+
+.semester-value {
+    font-size: 1.2em;
+    color: #2196f3;
+}
+
+.semester-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
 }
 
 .form-actions {
