@@ -129,12 +129,15 @@ def admin_dashboard():
     total_students = len(students)
     
     # 2. GPA Distribution
-    gpas = []
+    cgpas = []
+    last_semester_gpas = []
     academic_records = db.session.query(AcademicRecord).select_from(User).join(AcademicRecord, User.student_id == AcademicRecord.student_id).filter(User.dept_id == current_user.dept_id).all()
     for record in academic_records:
-        current_gpa = record.get_current_gpa()
-        if current_gpa:
-            gpas.append(current_gpa)
+        if record.cgpa:
+            cgpas.append(record.cgpa)
+        last_gpa = record.get_last_semester_gpa()
+        if last_gpa:
+            last_semester_gpas.append(last_gpa)
             
     # 3. Scholarship & Stipend Counts
     scholarship_count = db.session.query(Scholarship).select_from(User).join(Scholarship, User.student_id == Scholarship.student_id).filter(User.dept_id == current_user.dept_id).count()
@@ -150,48 +153,79 @@ def admin_dashboard():
     
     # --- Plot Generation ---
     
-    # Plot 1: GPA Distribution (Histogram)
-    plt.figure(figsize=(6, 4))
-    plt.hist(gpas, bins=10, color='#4caf50', edgecolor='black', alpha=0.7)
-    plt.title('Student GPA Distribution')
-    plt.xlabel('GPA')
-    plt.ylabel('Number of Students')
-    plt.grid(axis='y', alpha=0.5)
+    # Plot 1: CGPA Distribution (Histogram)
+    plt.figure(figsize=(10, 6))
+    plt.hist(cgpas, bins=15, color='#4caf50', edgecolor='black', alpha=0.7)
+    plt.title('Student CGPA Distribution', fontsize=16, fontweight='bold')
+    plt.xlabel('CGPA', fontsize=12)
+    plt.ylabel('Number of Students', fontsize=12)
+    plt.grid(axis='y', alpha=0.3, linestyle='--')
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
     
     img1 = io.BytesIO()
-    plt.savefig(img1, format='png', bbox_inches='tight')
+    plt.savefig(img1, format='png', bbox_inches='tight', dpi=100)
     img1.seek(0)
-    plot_gpa = base64.b64encode(img1.getvalue()).decode()
+    plot_cgpa = base64.b64encode(img1.getvalue()).decode()
     plt.close()
     
-    # Plot 2: Budget Utilization (Pie Chart)
-    plt.figure(figsize=(6, 4))
-    labels = ['Remaining', 'Scholarships', 'Stipends']
-    sizes = [remaining_budget, spent_scholarships, spent_stipends]
-    colors = ['#e0e0e0', '#4caf50', '#2196f3']
-    explode = (0.1, 0, 0) 
-    
-    plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', shadow=True, startangle=140)
-    plt.title('Budget Utilization')
+    # Plot 2: Last Semester GPA Distribution (Histogram)
+    plt.figure(figsize=(10, 6))
+    plt.hist(last_semester_gpas, bins=15, color='#2196f3', edgecolor='black', alpha=0.7)
+    plt.title('Last Semester GPA Distribution', fontsize=16, fontweight='bold')
+    plt.xlabel('Last Semester GPA', fontsize=12)
+    plt.ylabel('Number of Students', fontsize=12)
+    plt.grid(axis='y', alpha=0.3, linestyle='--')
+    plt.xticks(fontsize=10)
+    plt.yticks(fontsize=10)
     
     img2 = io.BytesIO()
-    plt.savefig(img2, format='png', bbox_inches='tight')
+    plt.savefig(img2, format='png', bbox_inches='tight', dpi=100)
     img2.seek(0)
-    plot_budget = base64.b64encode(img2.getvalue()).decode()
+    plot_last_gpa = base64.b64encode(img2.getvalue()).decode()
     plt.close()
     
-    # Plot 3: Awards Count (Bar Chart)
-    plt.figure(figsize=(6, 4))
-    categories = ['Scholarships', 'Stipends']
-    counts = [scholarship_count, stipend_count]
-    plt.bar(categories, counts, color=['#4caf50', '#2196f3'])
-    plt.title('Total Awards Granted')
-    plt.ylabel('Count')
+    # Plot 3: Budget Utilization (Pie Chart)
+    plt.figure(figsize=(10, 6))
+    labels = ['Remaining Budget', 'Scholarships Spent', 'Stipends Spent']
+    sizes = [remaining_budget, spent_scholarships, spent_stipends]
+    colors = ['#e0e0e0', '#4caf50', '#2196f3']
+    explode = (0.05, 0, 0) 
+    
+    plt.pie(sizes, explode=explode, labels=labels, colors=colors, autopct='%1.1f%%', 
+            shadow=True, startangle=140, textprops={'fontsize': 11})
+    plt.title('Budget Utilization', fontsize=16, fontweight='bold')
     
     img3 = io.BytesIO()
-    plt.savefig(img3, format='png', bbox_inches='tight')
+    plt.savefig(img3, format='png', bbox_inches='tight', dpi=100)
     img3.seek(0)
-    plot_awards = base64.b64encode(img3.getvalue()).decode()
+    plot_budget = base64.b64encode(img3.getvalue()).decode()
+    plt.close()
+    
+    # Plot 4: Award Breakdown (Bar Chart)
+    plt.figure(figsize=(10, 6))
+    categories = ['Scholarships', 'Stipends']
+    counts = [scholarship_count, stipend_count]
+    bars = plt.bar(categories, counts, color=['#4caf50', '#2196f3'], width=0.5)
+    
+    # Add value labels on top of bars
+    for bar in bars:
+        height = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2., height,
+                f'{int(height)}',
+                ha='center', va='bottom', fontsize=12, fontweight='bold')
+    
+    plt.title('Total Awards Granted', fontsize=16, fontweight='bold')
+    plt.ylabel('Count', fontsize=12)
+    plt.xlabel('Award Type', fontsize=12)
+    plt.grid(axis='y', alpha=0.3, linestyle='--')
+    plt.xticks(fontsize=11)
+    plt.yticks(fontsize=10)
+    
+    img4 = io.BytesIO()
+    plt.savefig(img4, format='png', bbox_inches='tight', dpi=100)
+    img4.seek(0)
+    plot_awards = base64.b64encode(img4.getvalue()).decode()
     plt.close()
 
     return render_template('admin_dashboard.html',
@@ -199,13 +233,16 @@ def admin_dashboard():
                          department=department,
                          stats={
                              'total_students': total_students,
-                             'avg_gpa': round(sum(gpas)/len(gpas), 2) if gpas else 0,
+                             'avg_cgpa': round(sum(cgpas)/len(cgpas), 2) if cgpas else 0,
+                             'avg_last_gpa': round(sum(last_semester_gpas)/len(last_semester_gpas), 2) if last_semester_gpas else 0,
                              'scholarship_count': scholarship_count,
                              'stipend_count': stipend_count,
-                             'total_spent': total_spent
+                             'total_spent': total_spent,
+                             'remaining_budget': remaining_budget
                          },
                          plots={
-                             'gpa': plot_gpa,
+                             'cgpa': plot_cgpa,
+                             'last_gpa': plot_last_gpa,
                              'budget': plot_budget,
                              'awards': plot_awards
                          })

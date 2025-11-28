@@ -33,14 +33,24 @@
             <div class="stat-label">Total Students</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🎓</div>
-            <div class="stat-value">{{ stats.avg_gpa }}</div>
-            <div class="stat-label">Average GPA</div>
+            <div class="stat-icon">📈</div>
+            <div class="stat-value">{{ stats.avg_cgpa }}</div>
+            <div class="stat-label">Average CGPA</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value">{{ stats.avg_last_gpa }}</div>
+            <div class="stat-label">Avg Last Semester GPA</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">💰</div>
             <div class="stat-value">৳{{ "{:,.0f}".format(stats.total_spent) }}</div>
             <div class="stat-label">Total Awarded</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💵</div>
+            <div class="stat-value">৳{{ "{:,.0f}".format(stats.remaining_budget) }}</div>
+            <div class="stat-label">Remaining Budget</div>
         </div>
         <div class="stat-card">
             <div class="stat-icon">🏆</div>
@@ -52,16 +62,26 @@
     <!-- Analytics Charts -->
     <div class="charts-section">
         <h2>📊 Analytics & Reports</h2>
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3>GPA Distribution</h3>
-                <img src="data:image/png;base64,{{ plots.gpa }}" alt="GPA Distribution">
+        
+        <!-- GPA Charts Row -->
+        <div class="charts-row">
+            <div class="chart-card-large">
+                <h3>CGPA Distribution</h3>
+                <img src="data:image/png;base64,{{ plots.cgpa }}" alt="CGPA Distribution">
             </div>
-            <div class="chart-card">
+            <div class="chart-card-large">
+                <h3>Last Semester GPA Distribution</h3>
+                <img src="data:image/png;base64,{{ plots.last_gpa }}" alt="Last Semester GPA Distribution">
+            </div>
+        </div>
+        
+        <!-- Budget & Awards Charts Row -->
+        <div class="charts-row">
+            <div class="chart-card-large">
                 <h3>Budget Utilization</h3>
                 <img src="data:image/png;base64,{{ plots.budget }}" alt="Budget Utilization">
             </div>
-            <div class="chart-card">
+            <div class="chart-card-large">
                 <h3>Awards Breakdown</h3>
                 <img src="data:image/png;base64,{{ plots.awards }}" alt="Awards Breakdown">
             </div>
@@ -88,7 +108,7 @@
 <style>
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 20px;
     margin: 20px 0;
 }
@@ -104,6 +124,7 @@
 
 .stat-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .stat-icon {
@@ -112,51 +133,65 @@
 }
 
 .stat-value {
-    font-size: 1.8em;
+    font-size: 1.6em;
     font-weight: bold;
     color: #333;
 }
 
 .stat-label {
     color: #666;
-    font-size: 0.9em;
+    font-size: 0.85em;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
+    margin-top: 5px;
 }
 
 .charts-section {
-    margin: 30px 0;
+    margin: 40px 0;
 }
 
-.charts-grid {
+.charts-section h2 {
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 1.8em;
+}
+
+.charts-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
 }
 
-.chart-card {
+.chart-card-large {
     background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     text-align: center;
 }
 
-.chart-card h3 {
-    margin-bottom: 15px;
-    color: #555;
-    font-size: 1.1em;
+.chart-card-large h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: 600;
 }
 
-.chart-card img {
+.chart-card-large img {
     max-width: 100%;
     height: auto;
-    border-radius: 5px;
+    border-radius: 8px;
 }
 
 .actions-section {
-    margin-top: 30px;
+    margin-top: 40px;
+}
+
+.actions-section h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 1.6em;
 }
 
 .action-buttons {
@@ -186,10 +221,32 @@
     border-color: #2196f3;
     color: #2196f3;
     transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .btn-icon {
     font-size: 1.5em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .chart-card-large {
+        padding: 15px;
+    }
+    
+    .chart-card-large h3 {
+        font-size: 1.1em;
+    }
 }
 </style>
 {% endblock %}

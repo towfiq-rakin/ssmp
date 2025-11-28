@@ -204,7 +204,7 @@ insert into students (student_id, reg_no, dept_id, name, session, email, passwor
 (23524202149,104201230149,1, 'MD. SHOAIB', '2022-2023', '23524202149@student.bup.edu.bd', 'admin'),
 (23524202151,104201230151,1, 'MD. TAHMID ALAM', '2022-2023', '23524202151@student.bup.edu.bd', 'admin');
 
-insert into academic_records (reg_no, student_id, cgpa, semester_5_gpa, current_semester) values
+insert into academic_records (reg_no, student_id, cgpa, semester_4_gpa, current_semester) values
 ('104201220061', '2252421061', 3.06, 2.61, 5),
 ('104201220086', '2252421086', 2.60, 2.68, 5),
 ('104201220109', '2252421109', 3.99, 3.98, 5),
@@ -264,7 +264,6 @@ insert into academic_records (reg_no, student_id, cgpa, semester_5_gpa, current_
 ('104201230126', '23524202126', 2.93, 2.69, 5),
 ('104201230129', '23524202129', 3.44, 3.41, 5),
 ('104201230130', '23524202130', 3.16, 3.14, 5),
-('104201230131', '23524202131', 3.77, 3.92, 5),
 ('104201230133', '23524202133', 3.33, 3.6, 5),
 ('104201230134', '23524202134', 3.09, 3.34, 5),
 ('104201230135', '23524202135', 3.51, 3.67, 5),
