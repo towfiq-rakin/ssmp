@@ -43,7 +43,7 @@
                         <td>Semester {{ item.last_completed_semester }}</td>
                         <td>{{ item.scholarship_type }}</td>
                         <td>৳{{ "{:,.2f}".format(item.scholarship_amount) }}</td>
-                        <td>
+                        <td class="action-buttons">
                             <a href="{{ url_for('main.admin_view_scholarship', student_id=item.student.student_id) }}" 
                                class="btn btn-view">Details</a>
                             <button class="btn btn-approve" 
@@ -310,7 +310,7 @@ function updateDatabase() {
     background-color: #4caf50;
     color: white;
     padding: 6px 12px;
-    margin: 0 3px;
+    margin: 3px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -324,7 +324,7 @@ function updateDatabase() {
     background-color: #f44336;
     color: white;
     padding: 6px 12px;
-    margin: 0 3px;
+    margin: 3px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
@@ -332,6 +332,14 @@ function updateDatabase() {
 
 .btn-reject:hover {
     background-color: #da190b;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
 }
 
 .approved-badge {

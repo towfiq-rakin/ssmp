@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Awarded Stipends - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">💰 Awarded Stipends</h1>
+    
+    <div class="student-info-card">
+        <div class="budget-info">
+            <div class="budget-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ department.name }}</span>
+            </div>
+            <div class="budget-item">
+                <span class="info-label">Total Stipends Awarded:</span>
+                <span class="info-value">{{ stipends|length }}</span>
+            </div>
+            <div class="budget-item">
+                <span class="info-label">Remaining Budget:</span>
+                <span class="info-value budget-amount">৳{{ "{:,.2f}".format(department.budget) }}</span>
+            </div>
+        </div>
+        
+        {% if stipends %}
+        <div class="table-container">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Stipend Type</th>
+                        <th>Amount</th>
+                        <th>Semester</th>
+                        <th>Awarded On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stipend, student in stipends %}
+                    <tr>
+                        <td>{{ student.student_id }}</td>
+                        <td>{{ student.name }}</td>
+                        <td>{{ stipend.type }}</td>
+                        <td>৳{{ "{:,.2f}".format(stipend.amount) }}</td>
+                        <td>{{ stipend.semester }}</td>
+                        <td>{{ stipend.awarded_at.strftime('%B %d, %Y') if stipend.awarded_at else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="summary-section">
+            <div class="summary-item">
+                <span class="info-label">Total Amount Awarded:</span>
+                <span class="info-value budget-amount">
+                    ৳{{ "{:,.2f}".format(stipends|sum(attribute='0.amount')) }}
+                </span>
+            </div>
+        </div>
+        {% else %}
+        <p class="no-results">No stipends have been awarded yet.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.budget-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.budget-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 1.2em;
+    color: #333;
+}
+
+.budget-amount {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #1976d2;
+}
+
+.summary-section {
+    text-align: center;
+    padding: 20px;
+    background-color: #e3f2fd;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.summary-section .summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-size: 1.1em;
+}
+</style>
+{% endblock %}

@@ -1134,3 +1134,49 @@ def reject_stipend_application(application_id):
     })
 
 
+@main_bp.route('/admin/scholarships/view')
+@login_required
+def admin_view_scholarships():
+    """Admin view scholarships page - displays all awarded scholarships"""
+    # Check if user is admin
+    if not isinstance(current_user, Admin):
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get department info
+    department = current_user.get_department()
+    
+    # Get all awarded scholarships for students in this department
+    scholarships = db.session.query(Scholarship, User).join(
+        User, Scholarship.student_id == User.student_id
+    ).filter(User.dept_id == current_user.dept_id).order_by(Scholarship.awarded_at.desc()).all()
+    
+    return render_template('admin_scholarships_view.html',
+                         admin=current_user,
+                         department=department,
+                         scholarships=scholarships)
+
+
+@main_bp.route('/admin/stipends/view')
+@login_required
+def admin_view_stipends():
+    """Admin view stipends page - displays all awarded stipends"""
+    # Check if user is admin
+    if not isinstance(current_user, Admin):
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get department info
+    department = current_user.get_department()
+    
+    # Get all awarded stipends for students in this department
+    stipends = db.session.query(Stipend, User).join(
+        User, Stipend.student_id == User.student_id
+    ).filter(User.dept_id == current_user.dept_id).order_by(Stipend.awarded_at.desc()).all()
+    
+    return render_template('admin_stipends_view.html',
+                         admin=current_user,
+                         department=department,
+                         stipends=stipends)
+
+
