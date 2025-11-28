@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 from models import AcademicRecord, Admin, User, Department, Scholarship, Stipend, IncomeRecord, Application
 from extensions import db
+from datetime import datetime
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -532,7 +533,8 @@ def approve_scholarship(student_id):
         student_name=student.name,
         type=scholarship_type,
         amount=scholarship_amount,
-        semester=semester_name
+        semester=semester_name,
+        awarded_at=datetime.now()
     )
     
     # Update department budget
@@ -603,7 +605,8 @@ def approve_all_scholarships():
                         student_name=student.name,
                         type=scholarship_type,
                         amount=scholarship_amount,
-                        semester=semester_name
+                        semester=semester_name,
+                        awarded_at=datetime.now()
                     )
                     
                     # Update department budget
@@ -703,7 +706,8 @@ def approve_multiple_scholarships():
             student_name=student.name,
             type=scholarship_type,
             amount=scholarship_amount,
-            semester=semester_name
+            semester=semester_name,
+            awarded_at=datetime.now()
         )
         
         # Update department budget
@@ -1081,7 +1085,8 @@ def approve_stipend_application(application_id):
         student_name=student.name,
         type=application.type,
         amount=amount,
-        semester=application.semester
+        semester=application.semester,
+        awarded_at=datetime.now()
     )
     
     # Update Application status
@@ -1092,6 +1097,7 @@ def approve_stipend_application(application_id):
     
     db.session.add(stipend)
     db.session.commit()
+    db.session.refresh(stipend)
     
     return jsonify({
         'success': True,

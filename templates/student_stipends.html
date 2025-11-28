@@ -103,33 +103,12 @@
             </div>
         </div>
         
-        {% if has_current_semester_scholarship or has_current_semester_stipend or not is_eligible %}
-        <!-- Not Eligible Message -->
+        {% if not is_eligible and ineligibility_reason != 'scholarship' and ineligibility_reason != 'stipend' %}
+        <!-- Not Eligible Message (only for low GPA, not for already awarded students) -->
         <div class="not-eligible-card">
             <div class="not-eligible-icon">⚠️</div>
             <h2>Stipend Eligibility</h2>
             
-            {% if ineligibility_reason == 'scholarship' %}
-            <p class="not-eligible-message">
-                You are not eligible for a stipend because you have already received a <strong>Scholarship</strong> for Semester {{ last_completed_semester }}.
-            </p>
-            <div class="eligibility-info">
-                <p><strong>Awarded:</strong> {{ has_current_semester_scholarship.type }}</p>
-                <p><strong>Amount:</strong> ৳{{ "{:,.2f}".format(has_current_semester_scholarship.amount) }}</p>
-                <p>Students can only receive one award (Scholarship or Stipend) per semester.</p>
-            </div>
-            
-            {% elif ineligibility_reason == 'stipend' %}
-            <p class="not-eligible-message">
-                You have already received a <strong>Stipend</strong> for Semester {{ last_completed_semester }}.
-            </p>
-            <div class="eligibility-info">
-                <p><strong>Awarded:</strong> {{ has_current_semester_stipend.type }}</p>
-                <p><strong>Amount:</strong> ৳{{ "{:,.2f}".format(has_current_semester_stipend.amount) }}</p>
-                <p>You cannot apply for another stipend for the same semester.</p>
-            </div>
-
-            {% else %}
             <p class="not-eligible-message">
                 Sorry, you are not currently eligible for stipends based on Semester {{ last_completed_semester }} results.
             </p>
@@ -153,7 +132,6 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
         </div>
         
         {% else %}

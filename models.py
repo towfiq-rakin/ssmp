@@ -128,7 +128,7 @@ class Scholarship(db.Model):
     type = db.Column(db.String(100), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     semester = db.Column(db.String(50), nullable=False)
-    awarded_at = db.Column(db.TIMESTAMP)
+    awarded_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
     
     def __repr__(self):
         return f'<Scholarship {self.student_name} - {self.type}>'
@@ -144,7 +144,7 @@ class Stipend(db.Model):
     type = db.Column(db.String(100), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     semester = db.Column(db.String(50), nullable=False)
-    awarded_at = db.Column(db.TIMESTAMP)
+    awarded_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
     
     def __repr__(self):
         return f'<Stipend {self.student_name} - {self.type}>'
