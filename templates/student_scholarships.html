@@ -1,37 +1,98 @@
 {% extends "base.html" %}
 
-{% block title %}Scholarships & Stipends - ScholarMate{% endblock %}
+{% block title %}Scholarships - ScholarMate{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
-    <h1 class="page-title">Scholarships & Stipends</h1>
+    <h1 class="page-title">Scholarships</h1>
     
-    {% if not is_eligible %}
+    {% if scholarships %}
+    <!-- Awarded Scholarships -->
+    <div class="student-info-card">
+        <div class="scholarships-section">
+            <h2>📚 Awarded Scholarships</h2>
+            {% for scholarship in scholarships %}
+            <div class="scholarship-item">
+                <div class="scholarship-header">
+                    <h3 class="scholarship-type">{{ scholarship.type }}</h3>
+                    <span class="scholarship-amount">৳{{ "{:,.2f}".format(scholarship.amount) }}</span>
+                </div>
+                <div class="scholarship-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Semester:</span>
+                        <span class="detail-value">{{ scholarship.semester }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Awarded On:</span>
+                        <span class="detail-value">{{ scholarship.awarded_at.strftime('%B %d, %Y') if scholarship.awarded_at else 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif not is_eligible %}
     <!-- Not Eligible Message -->
     <div class="not-eligible-card">
         <div class="not-eligible-icon">⚠️</div>
-        <h2>Scholarship & Stipend Eligibility</h2>
+        <h2>Scholarship Eligibility</h2>
+        
+        {% if ineligibility_reason == 'first_semester' %}
         <p class="not-eligible-message">
-            Sorry, you are not currently eligible for scholarships or stipends.
+            📚 You are currently in your <strong>first semester</strong>.
         </p>
         <div class="eligibility-info">
-            <p><strong>Minimum GPA Required:</strong> 3.50</p>
-            {% if academic_record %}
-            <p><strong>Your Current GPA:</strong> {{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</p>
+            <p>Scholarships are awarded based on the results of your <strong>last completed semester</strong>.</p>
+            <p>Complete your first semester to become eligible for scholarship evaluation.</p>
+        </div>
+        <div class="encouragement">
+            <p>💪 Focus on your studies and achieve a GPA of 3.80 or above this semester to become eligible next time!</p>
+        </div>
+        
+        {% elif ineligibility_reason == 'scholarship' %}
+        <p class="not-eligible-message">
+            ✅ You have already been awarded a <strong>Scholarship</strong> for Semester {{ last_completed_semester }}.
+        </p>
+        <div class="eligibility-info">
+            <p>Check the <a href="{{ url_for('main.dashboard') }}" style="color: #2196f3; font-weight: bold;">Dashboard</a> to view your awarded scholarship.</p>
+        </div>
+        
+        {% elif ineligibility_reason == 'stipend' %}
+        <p class="not-eligible-message">
+            ✅ You have already been awarded a <strong>Stipend</strong> for Semester {{ last_completed_semester }}.
+        </p>
+        <div class="eligibility-info">
+            <p>Students can only receive one award (Scholarship or Stipend) per semester.</p>
+            <p>Check the <strong>Stipends</strong> tab to view your awarded stipend.</p>
+        </div>
+        
+        {% elif ineligibility_reason == 'low_gpa_stipend' %}
+        <p class="not-eligible-message">
+            Your Semester {{ last_completed_semester }} GPA qualifies you for <strong>Stipends</strong>, not Scholarships.
+        </p>
+        <div class="eligibility-info">
+            <p><strong>Your Semester {{ last_completed_semester }} GPA:</strong> {{ "%.2f"|format(last_semester_gpa) if last_semester_gpa else 'N/A' }}</p>
+            <p><strong>Required for Scholarships:</strong> 3.80 or higher</p>
+        </div>
+        <div class="encouragement">
+            <p>👉 Please visit the <strong>Stipends</strong> tab to apply for available stipend programs.</p>
+        </div>
+        
+        {% else %}
+        <p class="not-eligible-message">
+            Sorry, you are not currently eligible for scholarships based on Semester {{ last_completed_semester }} results.
+        </p>
+        <div class="eligibility-info">
+            <p><strong>Minimum GPA Required:</strong> 3.80</p>
+            {% if last_semester_gpa %}
+            <p><strong>Your Semester {{ last_completed_semester }} GPA:</strong> {{ "%.2f"|format(last_semester_gpa) }}</p>
             {% else %}
-            <p><strong>Your Current GPA:</strong> No academic record found</p>
+            <p><strong>Your Last Semester GPA:</strong> No academic record found</p>
             {% endif %}
         </div>
         <div class="encouragement">
-            <p>💪 Keep working hard! Maintain a GPA of 3.50 or above to become eligible for:</p>
+            <p>💪 Keep working hard! Maintain a GPA of 3.80 or above to become eligible for:</p>
             <div class="benefits-grid">
-                <div class="benefit-card stipend-card">
-                    <h4>📘 Stipends (GPA 3.5 - 3.79)</h4>
-                    <ul>
-                        <li><strong>Vice Chancellor Stipend</strong> - ৳12,000 (GPA ≥ 3.75)</li>
-                        <li><strong>BUP Stipend</strong> - ৳6,000 (GPA ≥ 3.5)</li>
-                    </ul>
-                </div>
                 <div class="benefit-card scholarship-card-info">
                     <h4>🏆 Scholarships (GPA ≥ 3.8)</h4>
                     <ul>
@@ -41,91 +102,22 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
     {% else %}
-    <!-- Eligible - Show Scholarships/Stipends -->
+    <!-- Eligible - Show Scholarships -->
     <div class="student-info-card">
         <div class="eligibility-banner">
-            {% if eligible_for == 'scholarship' %}
             <span class="eligible-badge scholarship-badge">✓ Eligible for Scholarships</span>
-            {% else %}
-            <span class="eligible-badge stipend-badge">✓ Eligible for Stipends</span>
-            {% endif %}
-            <span class="cgpa-display">Current GPA: {{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</span>
+            <span class="cgpa-display">Semester {{ last_completed_semester }} GPA: {{ "%.2f"|format(last_semester_gpa) if last_semester_gpa else 'N/A' }}</span>
         </div>
         
-        {% if scholarships or stipends %}
-        <div class="awards-section">
-            <!-- Scholarships Section -->
-            {% if scholarships %}
-            <div class="scholarships-section">
-                <h2>📚 Awarded Scholarships</h2>
-                {% for scholarship in scholarships %}
-                <div class="scholarship-item">
-                    <div class="scholarship-header">
-                        <h3 class="scholarship-type">{{ scholarship.type }}</h3>
-                        <span class="scholarship-amount">৳{{ "{:,.2f}".format(scholarship.amount) }}</span>
-                    </div>
-                    <div class="scholarship-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Semester:</span>
-                            <span class="detail-value">{{ scholarship.semester }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Awarded On:</span>
-                            <span class="detail-value">{{ scholarship.awarded_at.strftime('%B %d, %Y') if scholarship.awarded_at else 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Stipends Section -->
-            {% if stipends %}
-            <div class="stipends-section">
-                <h2>💰 Awarded Stipends</h2>
-                {% for stipend in stipends %}
-                <div class="stipend-item">
-                    <div class="stipend-header">
-                        <h3 class="stipend-type">{{ stipend.type }}</h3>
-                        <span class="stipend-amount">৳{{ "{:,.2f}".format(stipend.amount) }}</span>
-                    </div>
-                    <div class="stipend-details">
-                        <div class="detail-row">
-                            <span class="detail-label">Semester:</span>
-                            <span class="detail-value">{{ stipend.semester }}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Awarded On:</span>
-                            <span class="detail-value">{{ stipend.awarded_at.strftime('%B %d, %Y') if stipend.awarded_at else 'N/A' }}</span>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-            
-            <!-- Summary -->
-            <div class="awards-summary">
-                <div class="summary-row">
-                    <span class="summary-label">Total Awards Received:</span>
-                    <span class="summary-value">{{ (scholarships|length) + (stipends|length) }}</span>
-                </div>
-                <div class="summary-row">
-                    <span class="summary-label">Total Amount:</span>
-                    <span class="summary-value total-amount">৳{{ "{:,.2f}".format((scholarships|sum(attribute='amount')) + (stipends|sum(attribute='amount'))) }}</span>
-                </div>
-            </div>
-        </div>
-        {% else %}
         <div class="no-scholarships">
             <div class="info-icon">ℹ️</div>
-            <p class="info-message">You have not been awarded any scholarships or stipends yet.</p>
+            <p class="info-message">You have not been awarded any scholarships yet for Semester {{ last_completed_semester }}.</p>
             <div class="scholarship-criteria">
                 <h3>Available Programs:</h3>
                 <div class="criteria-list">
-                    {% if eligible_for == 'scholarship' %}
                     <div class="criteria-item scholarship-criteria-card">
                         <h4>🏆 Scholarships (Your GPA Qualifies!)</h4>
                         <p>Amount: <strong>৳15,000</strong></p>
@@ -134,21 +126,10 @@
                         <p>Amount: <strong>৳9,000</strong></p>
                         <p>Requirement: GPA ≥ 3.8 (BUP Scholarship)</p>
                     </div>
-                    {% else %}
-                    <div class="criteria-item stipend-criteria-card">
-                        <h4>💰 Stipends (Your GPA Qualifies!)</h4>
-                        <p>Amount: <strong>৳12,000</strong></p>
-                        <p>Requirement: GPA ≥ 3.75 (Vice Chancellor Stipend)</p>
-                        <p class="or-text">OR</p>
-                        <p>Amount: <strong>৳6,000</strong></p>
-                        <p>Requirement: GPA ≥ 3.5 (BUP Stipend)</p>
-                    </div>
-                    {% endif %}
                 </div>
                 <p class="note">Your eligibility is evaluated automatically based on your GPA each semester. Keep up the good work!</p>
             </div>
         </div>
-        {% endif %}
     </div>
     {% endif %}
 </div>

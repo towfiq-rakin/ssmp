@@ -78,3 +78,6 @@ insert into students (id, reg_no, dept_id, name, session, email, password) value
 (23524202148,104201230148,1, 'MD. ABID REJWAN', '2022-2023', '23524202148@student.bup.edu.bd', 'admin'),
 (23524202149,104201230149,1, 'MD. SHOAIB', '2022-2023', '23524202149@student.bup.edu.bd', 'admin'),
 (23524202151,104201230151,1, 'MD. TAHMID ALAM', '2022-2023', '23524202151@student.bup.edu.bd', 'admin');
+
+insert into academic_records (reg_no, student_id, cgpa,semester_1_gpa,semester_2_gpa,semester_3_gpa,semester_4_gpa, current_semester) values
+('104201230131', '23524202131', 3.77,3.59,3.81,3.77,3.92,5);

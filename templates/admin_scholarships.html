@@ -21,12 +21,14 @@
         <!-- Eligible Students Table -->
         {% if eligible_students %}
         <div class="table-container">
+            <p class="info-note">📊 Eligibility is based on <strong>last completed semester</strong> results.</p>
             <table class="students-table">
                 <thead>
                     <tr>
                         <th>Student ID</th>
                         <th>Name</th>
-                        <th>GPA</th>
+                        <th>Last Semester GPA</th>
+                        <th>Semester</th>
                         <th>Scholarship Type</th>
                         <th>Amount</th>
                         <th>Actions</th>
@@ -37,7 +39,8 @@
                     <tr id="student-row-{{ item.student.student_id }}">
                         <td>{{ item.student.student_id }}</td>
                         <td>{{ item.student.name }}</td>
-                        <td>{{ "%.2f"|format(item.academic_record.get_current_gpa()) if item.academic_record.get_current_gpa() else 'N/A' }}</td>
+                        <td>{{ "%.2f"|format(item.last_semester_gpa) if item.last_semester_gpa else 'N/A' }}</td>
+                        <td>Semester {{ item.last_completed_semester }}</td>
                         <td>{{ item.scholarship_type }}</td>
                         <td>৳{{ "{:,.2f}".format(item.scholarship_amount) }}</td>
                         <td>
@@ -169,7 +172,7 @@ function approveAll() {
     // Approve all rows
     for (let row of rows) {
         const studentId = parseInt(row.id.replace('student-row-', ''));
-        const amountText = row.cells[4].textContent.replace('৳', '').replace(',', '');
+        const amountText = row.cells[5].textContent.replace('৳', '').replace(',', '');
         const amount = parseFloat(amountText);
         
         // Check if not already approved
@@ -356,6 +359,15 @@ function updateDatabase() {
 
 .pending-summary .budget-amount {
     color: #856404;
+}
+
+.info-note {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    color: #1565c0;
 }
 </style>
 {% endblock %}

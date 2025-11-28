@@ -16,8 +16,10 @@
                 {% if current_user.is_authenticated and current_user.__class__.__name__ == 'Admin' %}
                 <li><a href="{{ url_for('main.admin_students') }}">Students</a></li>
                 <li><a href="{{ url_for('main.admin_scholarships') }}">Scholarships</a></li>
+                <li><a href="{{ url_for('main.admin_stipend_applications') }}">Stipends</a></li>
                 {% elif current_user.is_authenticated %}
-                <li><a href="{{ url_for('main.student_scholarships') }}">Scholarships & Stipends</a></li>
+                <li><a href="{{ url_for('main.student_scholarships') }}">Scholarships</a></li>
+                <li><a href="{{ url_for('main.student_stipends') }}">Stipends</a></li>
                 {% endif %}
             </ul>
             <div class="nav-buttons">

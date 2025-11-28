@@ -86,9 +86,21 @@ class AcademicRecord(db.Model):
     current_semester = db.Column(db.Integer, nullable=False, default=5)
     
     def get_current_gpa(self):
-        """Get GPA for the current semester"""
+        """Get GPA for the current semester (may be None if not yet graded)"""
         semester_field = f'semester_{self.current_semester}_gpa'
         return getattr(self, semester_field, None)
+    
+    def get_last_semester_gpa(self):
+        """Get GPA for the last completed semester (current_semester - 1)"""
+        if self.current_semester <= 1:
+            return None
+        last_semester = self.current_semester - 1
+        semester_field = f'semester_{last_semester}_gpa'
+        return getattr(self, semester_field, None)
+    
+    def get_last_completed_semester(self):
+        """Get the last completed semester number"""
+        return self.current_semester - 1 if self.current_semester > 1 else 0
     
     def calculate_cgpa(self):
         """Calculate CGPA from all non-null semester GPAs"""
@@ -136,3 +148,34 @@ class Stipend(db.Model):
     
     def __repr__(self):
         return f'<Stipend {self.student_name} - {self.type}>'
+
+
+class IncomeRecord(db.Model):
+    """Income Record Model"""
+    __tablename__ = 'income_records'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    student_id = db.Column(db.BigInteger, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    source = db.Column(db.String(255), nullable=False)
+    family_member = db.Column(db.Integer, nullable=False)
+    date = db.Column(db.TIMESTAMP)
+    
+    def __repr__(self):
+        return f'<IncomeRecord {self.student_id} - {self.amount}>'
+
+
+class Application(db.Model):
+    """Application Model"""
+    __tablename__ = 'applications'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    student_id = db.Column(db.BigInteger, nullable=False)
+    type = db.Column(db.String(255), nullable=False)
+    semester = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    updated_at = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    
+    def __repr__(self):
+        return f'<Application {self.student_id} - {self.type} - {self.status}>'

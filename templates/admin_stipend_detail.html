@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Stipend Application Details - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="back-nav">
+        <a href="{{ url_for('main.admin_stipend_applications') }}" class="btn btn-back">← Back to Applications</a>
+    </div>
+
+    <h1 class="page-title">Stipend Application Details</h1>
+
+    <!-- Student Information -->
+    <div class="student-info-card">
+        <h2>Student Information</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Name:</span>
+                <span class="info-value">{{ student.name }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Student ID:</span>
+                <span class="info-value">{{ student.student_id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ student.email }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Session:</span>
+                <span class="info-value">{{ student.session }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Academic Information -->
+    <div class="student-info-card">
+        <h2>Academic Performance</h2>
+        <div class="info-grid">
+            <div class="info-item highlight-item">
+                <span class="info-label">Last Semester GPA:</span>
+                <span class="info-value highlight-value">{{ "%.2f"|format(last_semester_gpa) if last_semester_gpa else 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Cumulative GPA:</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.cgpa) if academic_record else 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Last Completed Semester:</span>
+                <span class="info-value">Semester {{ last_completed_semester }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Applying For:</span>
+                <span class="info-value">{{ application.semester }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Income Information -->
+    <div class="student-info-card">
+        <h2>Family Income Details</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Monthly Family Income:</span>
+                <span class="info-value">৳{{ "{:,.2f}".format(income.amount) if income else 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Income Source:</span>
+                <span class="info-value">{{ income.source if income else 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Family Members:</span>
+                <span class="info-value">{{ income.family_member if income else 'N/A' }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Application Submitted:</span>
+                <span class="info-value">{{ application.created_at.strftime('%B %d, %Y at %I:%M %p') if application.created_at else 'N/A' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stipend Details -->
+    <div class="student-info-card">
+        <h2>Requested Stipend</h2>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">Stipend Type:</span>
+                <span class="info-value">{{ application.type }}</span>
+            </div>
+            <div class="info-item highlight-item">
+                <span class="info-label">Amount:</span>
+                <span class="info-value highlight-value">৳{{ "{:,.2f}".format(amount) }}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value status-{{ application.status.lower() }}">{{ application.status }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    {% if application.status == 'Pending' %}
+    <div class="action-section">
+        <button class="btn btn-approve" onclick="approveApplication({{ application.id }})">
+            ✓ Approve Application
+        </button>
+        <button class="btn btn-reject" onclick="rejectApplication({{ application.id }})">
+            ✗ Reject Application
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function approveApplication(appId) {
+    if (!confirm('Are you sure you want to approve this stipend application?')) {
+        return;
+    }
+    
+    fetch(`/admin/stipends/approve/${appId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "{{ url_for('main.admin_stipend_applications') }}";
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred.');
+    });
+}
+
+function rejectApplication(appId) {
+    if (!confirm('Are you sure you want to reject this stipend application?')) {
+        return;
+    }
+    
+    fetch(`/admin/stipends/reject/${appId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            window.location.href = "{{ url_for('main.admin_stipend_applications') }}";
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred.');
+    });
+}
+</script>
+
+<style>
+.highlight-item {
+    background-color: #e3f2fd !important;
+}
+
+.highlight-value {
+    color: #2196f3;
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.status-pending {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.status-approved {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.status-rejected {
+    color: #f44336;
+    font-weight: bold;
+}
+
+.action-section {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 600;
+    margin: 0 10px;
+    transition: all 0.3s;
+}
+
+.btn-approve {
+    background-color: #4caf50;
+    color: white;
+}
+
+.btn-approve:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-reject {
+    background-color: #f44336;
+    color: white;
+}
+
+.btn-reject:hover {
+    background-color: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(244, 67, 54, 0.3);
+}
+
+@media (max-width: 768px) {
+    .action-section {
+        padding: 15px;
+    }
+    
+    .btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+</style>
+{% endblock %}

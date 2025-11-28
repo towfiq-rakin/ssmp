@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Stipend Applications - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">Stipend Applications</h1>
+    
+    <div class="student-info-card">
+        <div class="budget-info">
+            <div class="budget-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ department.name }}</span>
+            </div>
+            <div class="budget-item">
+                <span class="info-label">Total Budget Remaining:</span>
+                <span class="info-value budget-amount">৳{{ "{:,.2f}".format(department.budget) }}</span>
+            </div>
+        </div>
+        
+        <!-- Pending Applications Table -->
+        {% if applications %}
+        <div class="table-container">
+            <p class="info-note">📊 Stipend eligibility is based on <strong>last completed semester</strong> results.</p>
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Last Sem GPA</th>
+                        <th>For Semester</th>
+                        <th>Stipend Type</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in applications %}
+                    <tr id="app-row-{{ item.application.id }}">
+                        <td>{{ item.student.student_id }}</td>
+                        <td><strong>{{ item.student.name }}</strong></td>
+                        <td>{{ "%.2f"|format(item.academic_record.get_last_semester_gpa()) if item.academic_record.get_last_semester_gpa() else 'N/A' }}</td>
+                        <td>{{ item.application.semester }}</td>
+                        <td>{{ item.application.type }}</td>
+                        <td>৳{{ "{:,.2f}".format(item.amount) }}</td>
+                        <td>
+                            <a href="{{ url_for('main.admin_stipend_detail', application_id=item.application.id) }}" class="btn btn-details">
+                                Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-results">No pending stipend applications.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.budget-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.budget-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.budget-amount {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2c5f2d;
+}
+
+.info-note {
+    background-color: #e3f2fd;
+    border-left: 4px solid #2196f3;
+    padding: 12px 20px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    color: #1565c0;
+}
+
+.btn-details {
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95em;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.btn-details:hover {
+    background-color: #1976d2;
+}
+</style>
+{% endblock %}
