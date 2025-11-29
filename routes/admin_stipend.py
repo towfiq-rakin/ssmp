@@ -10,7 +10,7 @@ from extensions import db
 admin_stipend_bp = Blueprint('admin_stipend', __name__, url_prefix='/admin')
 
 
-@admin_stipend_bp.route('/admin/stipends/applications')
+@admin_stipend_bp.route('/stipends/applications')
 @login_required
 def admin_stipend_applications():
     """Admin view for pending stipend applications"""
@@ -59,7 +59,7 @@ def admin_stipend_applications():
                          applications=applications_data)
 
 
-@admin_stipend_bp.route('/admin/stipends/application/<int:application_id>')
+@admin_stipend_bp.route('/stipends/application/<application_id>')
 @login_required
 def admin_stipend_detail(application_id):
     """Admin view for individual stipend application details"""
@@ -67,6 +67,9 @@ def admin_stipend_detail(application_id):
     if not isinstance(current_user, Admin):
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('admin_stipend.dashboard'))
+    
+    # Convert application_id to int
+    application_id = int(application_id)
     
     # Get application
     application = Application.query.get(application_id)
@@ -106,13 +109,16 @@ def admin_stipend_detail(application_id):
                          last_completed_semester=last_completed_semester)
 
 
-@admin_stipend_bp.route('/admin/stipends/approve/<int:application_id>', methods=['POST'])
+@admin_stipend_bp.route('/stipends/approve/<application_id>', methods=['POST'])
 @login_required
 def approve_stipend_application(application_id):
     """Approve a stipend application"""
     # Check if user is admin
     if not isinstance(current_user, Admin):
         return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Convert application_id to int
+    application_id = int(application_id)
     
     # Get application
     application = Application.query.get(application_id)
@@ -159,13 +165,16 @@ def approve_stipend_application(application_id):
     })
 
 
-@admin_stipend_bp.route('/admin/stipends/reject/<int:application_id>', methods=['POST'])
+@admin_stipend_bp.route('/stipends/reject/<application_id>', methods=['POST'])
 @login_required
 def reject_stipend_application(application_id):
     """Reject a stipend application"""
     # Check if user is admin
     if not isinstance(current_user, Admin):
         return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Convert application_id to int
+    application_id = int(application_id)
     
     # Get application
     application = Application.query.get(application_id)
@@ -188,7 +197,7 @@ def reject_stipend_application(application_id):
     })
 
 
-@admin_stipend_bp.route('/admin/stipends/view')
+@admin_stipend_bp.route('/stipends/view')
 @login_required
 def admin_view_stipends():
     """Admin view stipends page - displays all awarded stipends"""
