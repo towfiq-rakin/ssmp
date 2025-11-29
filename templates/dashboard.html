@@ -6,6 +6,31 @@
 <div class="dashboard-container">
     <h1 class="page-title">Student Dashboard</h1>
     
+    <!-- Quick Stats -->
+    <div class="quick-stats">
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">📚</div>
+            <div class="quick-stat-content">
+                <div class="quick-stat-label">CGPA</div>
+                <div class="quick-stat-value">{{ "%.2f"|format(academic_record.cgpa) if academic_record else 'N/A' }}</div>
+            </div>
+        </div>
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">📖</div>
+            <div class="quick-stat-content">
+                <div class="quick-stat-label">Current Semester</div>
+                <div class="quick-stat-value">{{ academic_record.current_semester if academic_record else 'N/A' }}</div>
+            </div>
+        </div>
+        <div class="quick-stat-card">
+            <div class="quick-stat-icon">⭐</div>
+            <div class="quick-stat-content">
+                <div class="quick-stat-label">Last Semester GPA</div>
+                <div class="quick-stat-value">{{ "%.2f"|format(last_semester_gpa) if last_semester_gpa else 'N/A' }}</div>
+            </div>
+        </div>
+    </div>
+    
     <div class="student-info-card">
         <h2>Personal Information</h2>
         <div class="info-grid">
@@ -72,11 +97,74 @@
             {% endif %}
             {% endfor %}
         </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('student.academics') }}" class="btn btn-view-details">View Detailed Analytics →</a>
+        </div>
     </div>
     {% endif %}
 </div>
 
 <style>
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.quick-stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: transform 0.2s;
+}
+
+.quick-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quick-stat-icon {
+    font-size: 2.5em;
+}
+
+.quick-stat-content {
+    flex: 1;
+}
+
+.quick-stat-label {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.quick-stat-value {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #2196f3;
+}
+
+.btn-view-details {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-view-details:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
 .semester-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -107,6 +195,10 @@
 @media (max-width: 768px) {
     .semester-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .quick-stats {
+        grid-template-columns: 1fr;
     }
 }
 </style>

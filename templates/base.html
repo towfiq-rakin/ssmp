@@ -30,6 +30,7 @@
                     </ul>
                 </li>
                 {% elif current_user.is_authenticated %}
+                <li><a href="{{ url_for('student.academics') }}">Academics</a></li>
                 <li><a href="{{ url_for('student.scholarships') }}">Scholarships</a></li>
                 <li><a href="{{ url_for('student.stipends') }}">Stipends</a></li>
                 {% endif %}
