@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 from models import AcademicRecord, Admin, User, Department, Stipend, Application, IncomeRecord
 from extensions import db
+from routes.email_utils import send_stipend_approval_email, send_stipend_rejection_email
 
 admin_stipend_bp = Blueprint('admin_stipend', __name__, url_prefix='/admin')
 
@@ -159,6 +160,18 @@ def approve_stipend_application(application_id):
     db.session.commit()
     db.session.refresh(stipend)
     
+    # Send email notification
+    try:
+        send_stipend_approval_email(
+            student.email,
+            student.name,
+            application.type,
+            amount,
+            application.semester
+        )
+    except Exception as e:
+        print(f"Failed to send email to {student.email}: {str(e)}")
+    
     return jsonify({
         'success': True,
         'message': 'Application approved successfully'
@@ -190,6 +203,17 @@ def reject_stipend_application(application_id):
     application.status = 'Rejected'
     
     db.session.commit()
+    
+    # Send email notification
+    try:
+        send_stipend_rejection_email(
+            student.email,
+            student.name,
+            application.type,
+            application.semester
+        )
+    except Exception as e:
+        print(f"Failed to send email to {student.email}: {str(e)}")
     
     return jsonify({
         'success': True,

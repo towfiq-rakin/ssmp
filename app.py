@@ -4,7 +4,7 @@ Main Application Entry Point
 """
 from flask import Flask
 from config import config
-from extensions import db, login_manager
+from extensions import db, login_manager, mail
 from models import User, Admin
 
 
@@ -18,6 +18,7 @@ def create_app(config_name='development'):
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
+    mail.init_app(app)
     
     # User loader for Flask-Login
     @login_manager.user_loader

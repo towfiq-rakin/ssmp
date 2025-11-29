@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 from models import AcademicRecord, Admin, User, Department, Scholarship
 from extensions import db
+from routes.email_utils import send_scholarship_approval_email
 
 admin_scholarship_bp = Blueprint('admin_scholarship', __name__, url_prefix='/admin')
 
@@ -206,6 +207,18 @@ def approve_scholarship(student_id):
     db.session.add(scholarship)
     db.session.commit()
     
+    # Send email notification
+    try:
+        send_scholarship_approval_email(
+            student.email,
+            student.name,
+            scholarship_type,
+            scholarship_amount,
+            semester_name
+        )
+    except Exception as e:
+        print(f"Failed to send email to {student.email}: {str(e)}")
+    
     return jsonify({
         'success': True,
         'message': 'Scholarship approved successfully',
@@ -277,6 +290,18 @@ def approve_all_scholarships():
                     
                     db.session.add(scholarship)
                     approved_count += 1
+                    
+                    # Send email notification
+                    try:
+                        send_scholarship_approval_email(
+                            student.email,
+                            student.name,
+                            scholarship_type,
+                            scholarship_amount,
+                            semester_name
+                        )
+                    except Exception as e:
+                        print(f"Failed to send email to {student.email}: {str(e)}")
     
     db.session.commit()
     
@@ -377,6 +402,18 @@ def approve_multiple_scholarships():
         
         db.session.add(scholarship)
         approved_count += 1
+        
+        # Send email notification
+        try:
+            send_scholarship_approval_email(
+                student.email,
+                student.name,
+                scholarship_type,
+                scholarship_amount,
+                semester_name
+            )
+        except Exception as e:
+            print(f"Failed to send email to {student.email}: {str(e)}")
     
     db.session.commit()
     
