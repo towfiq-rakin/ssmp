@@ -44,7 +44,7 @@
                         <td>{{ item.application.type }}</td>
                         <td>৳{{ "{:,.2f}".format(item.amount) }}</td>
                         <td>
-                            <a href="{{ url_for('main.admin_stipend_detail', application_id=item.application.id) }}" class="btn btn-details">
+                            <a href="{{ url_for('admin_stipend.admin_stipend_detail', application_id=item.application.id) }}" class="btn btn-details">
                                 Details
                             </a>
                         </td>

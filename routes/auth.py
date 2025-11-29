@@ -51,7 +51,7 @@ def login():
             if next_page:
                 return redirect(next_page)
             elif isinstance(user, Admin):
-                return redirect(url_for('main.admin_dashboard'))
+                return redirect(url_for('admin.dashboard'))
             else:
                 return redirect(url_for('main.dashboard'))
         else:

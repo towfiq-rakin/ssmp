@@ -5,7 +5,7 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="back-nav">
-        <a href="{{ url_for('main.admin_scholarships') }}" class="btn btn-back">← Back to Scholarships</a>
+        <a href="{{ url_for('admin_scholarship.admin_scholarships') }}" class="btn btn-back">← Back to Scholarships</a>
     </div>
 
     <h1 class="page-title">Scholarship Details</h1>
@@ -118,7 +118,7 @@ function approveScholarship() {
     .then(data => {
         if (data.success) {
             alert(data.message);
-            window.location.href = "{{ url_for('main.admin_scholarships') }}";
+            window.location.href = "{{ url_for('admin_scholarship.admin_scholarships') }}";
         } else {
             alert('Error: ' + data.message);
         }
@@ -135,7 +135,7 @@ function rejectScholarship() {
     }
     
     alert('Scholarship rejected.');
-    window.location.href = "{{ url_for('main.admin_scholarships') }}";
+    window.location.href = "{{ url_for('admin_scholarship.admin_scholarships') }}";
 }
 </script>
 

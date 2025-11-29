@@ -5,7 +5,7 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="back-nav">
-        <a href="{{ url_for('main.admin_students') }}" class="btn btn-back">← Back to Students</a>
+        <a href="{{ url_for('admin.students') }}" class="btn btn-back">← Back to Students</a>
     </div>
 
     <h1 class="page-title">Student Details</h1>
@@ -59,19 +59,21 @@
                 <span class="info-value">Semester {{ academic_record.current_semester }}</span>
             </div>
             <div class="info-item">
-                <span class="info-label">Current Semester GPA:</span>
-                <span class="info-value">{{ "%.2f"|format(academic_record.get_current_gpa()) if academic_record.get_current_gpa() else 'N/A' }}</span>
+                <span class="info-label">{% if academic_record.get_last_completed_semester() and academic_record.get_last_completed_semester() > 0 %}Semester {{ academic_record.get_last_completed_semester() }} GPA{% else %}Last Semester GPA{% endif %}:</span>
+                <span class="info-value">{{ "%.2f"|format(academic_record.get_last_semester_gpa()) if academic_record.get_last_semester_gpa() else 'N/A' }}</span>
             </div>
         </div>
         
         <h3 style="margin-top: 20px;">Semester GPAs</h3>
         <div class="semester-grid">
             {% for i in range(1, 9) %}
+            {% if i < academic_record.current_semester %}
             <div class="semester-item">
                 <span class="semester-label">Semester {{ i }}:</span>
                 {% set gpa = academic_record['semester_' ~ i ~ '_gpa'] %}
                 <span class="semester-value">{{ "%.2f"|format(gpa) if gpa else 'N/A' }}</span>
             </div>
+            {% endif %}
             {% endfor %}
         </div>
         

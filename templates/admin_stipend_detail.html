@@ -5,7 +5,7 @@
 {% block content %}
 <div class="dashboard-container">
     <div class="back-nav">
-        <a href="{{ url_for('main.admin_stipend_applications') }}" class="btn btn-back">← Back to Applications</a>
+        <a href="{{ url_for('admin_stipend.admin_stipend_applications') }}" class="btn btn-back">← Back to Applications</a>
     </div>
 
     <h1 class="page-title">Stipend Application Details</h1>
@@ -127,7 +127,7 @@ function approveApplication(appId) {
     .then(data => {
         if (data.success) {
             alert(data.message);
-            window.location.href = "{{ url_for('main.admin_stipend_applications') }}";
+            window.location.href = "{{ url_for('admin_stipend.admin_stipend_applications') }}";
         } else {
             alert('Error: ' + data.message);
         }
@@ -153,7 +153,7 @@ function rejectApplication(appId) {
     .then(data => {
         if (data.success) {
             alert(data.message);
-            window.location.href = "{{ url_for('main.admin_stipend_applications') }}";
+            window.location.href = "{{ url_for('admin_stipend.admin_stipend_applications') }}";
         } else {
             alert('Error: ' + data.message);
         }

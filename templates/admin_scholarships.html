@@ -44,7 +44,7 @@
                         <td>{{ item.scholarship_type }}</td>
                         <td>৳{{ "{:,.2f}".format(item.scholarship_amount) }}</td>
                         <td class="action-buttons">
-                            <a href="{{ url_for('main.admin_view_scholarship', student_id=item.student.student_id) }}" 
+                            <a href="{{ url_for('admin_scholarship.admin_view_scholarship', student_id=item.student.student_id) }}" 
                                class="btn btn-view">Details</a>
                             <button class="btn btn-approve" 
                                     onclick="approveScholarship({{ item.student.student_id }}, {{ item.scholarship_amount }})">

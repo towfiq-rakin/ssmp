@@ -31,9 +31,14 @@ def create_app(config_name='development'):
         return None
     
     # Register blueprints
-    from routes import auth_bp, main_bp
+    from routes import auth_bp, main_bp, admin_bp, admin_scholarship_bp, admin_stipend_bp, student_bp, student_actions_bp
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(admin_scholarship_bp)
+    app.register_blueprint(admin_stipend_bp)
+    app.register_blueprint(student_bp)
+    app.register_blueprint(student_actions_bp)
     
     return app
 
