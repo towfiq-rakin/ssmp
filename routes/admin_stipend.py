@@ -220,3 +220,59 @@ def admin_view_stipends():
                          stipends=stipends)
 
 
+@admin_stipend_bp.route('/stipends/application-history')
+@login_required
+def application_history():
+    """Admin view for all stipend application history (approved, rejected, pending)"""
+    # Check if user is admin
+    if not isinstance(current_user, Admin):
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('main.dashboard'))
+    
+    # Get department info
+    department = current_user.get_department()
+    
+    # Get filter from query params
+    status_filter = request.args.get('status', 'all')
+    
+    # Get all applications for students in admin's department
+    applications_query = db.session.query(Application).join(
+        User, Application.student_id == User.student_id
+    ).filter(User.dept_id == current_user.dept_id)
+    
+    # Apply status filter if not 'all'
+    if status_filter != 'all':
+        applications_query = applications_query.filter(Application.status == status_filter.capitalize())
+    
+    applications = applications_query.order_by(Application.created_at.desc()).all()
+    
+    applications_data = []
+    for app in applications:
+        # Get student info
+        student = User.query.filter_by(student_id=app.student_id).first()
+        
+        # Get academic record
+        academic_record = AcademicRecord.query.filter_by(student_id=app.student_id).first()
+        
+        # Get the most recent income record for this student
+        income = IncomeRecord.query.filter_by(student_id=app.student_id).order_by(IncomeRecord.date.desc()).first()
+        
+        amount = 6000
+        if app.type == "Vice Chancellor Stipend":
+            amount = 12000
+            
+        applications_data.append({
+            'application': app,
+            'student': student,
+            'academic_record': academic_record,
+            'income': income,
+            'amount': amount
+        })
+    
+    return render_template('admin_stipend_history.html',
+                         admin=current_user,
+                         department=department,
+                         applications=applications_data,
+                         status_filter=status_filter)
+
+

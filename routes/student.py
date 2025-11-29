@@ -153,6 +153,7 @@ def stipends():
     # Check if already has award for last completed semester
     has_current_semester_scholarship = None
     has_current_semester_stipend = None
+    rejected_application = None
     if last_completed_semester and last_completed_semester > 0:
         semester_name = f"Semester {last_completed_semester}"
         has_current_semester_scholarship = Scholarship.query.filter_by(
@@ -163,6 +164,12 @@ def stipends():
             student_id=current_user.student_id,
             semester=semester_name
         ).first()
+        # Check for rejected application for current semester
+        rejected_application = Application.query.filter_by(
+            student_id=current_user.student_id,
+            semester=semester_name,
+            status='Rejected'
+        ).first()
 
     can_proceed_with_application = (
         bool(last_completed_semester and last_completed_semester > 0)
@@ -170,6 +177,7 @@ def stipends():
         and not has_current_semester_stipend
         and is_eligible
         and pending_application is None
+        and rejected_application is None
     )
     
     # Get application history
@@ -190,6 +198,7 @@ def stipends():
                          stipends=stipends,
                          has_current_semester_scholarship=has_current_semester_scholarship,
                          has_current_semester_stipend=has_current_semester_stipend,
+                         rejected_application=rejected_application,
                          last_semester_gpa=last_semester_gpa,
                          last_completed_semester=last_completed_semester,
                          eligibility_criteria=eligibility_criteria)

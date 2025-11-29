@@ -27,6 +27,7 @@
                     <ul class="dropdown-menu">
                         <li><a href="{{ url_for('admin.view_stipends') }}">View</a></li>
                         <li><a href="{{ url_for('admin_stipend.admin_stipend_applications') }}">Update</a></li>
+                        <li><a href="{{ url_for('admin_stipend.application_history') }}">Application History</a></li>
                     </ul>
                 </li>
                 {% elif current_user.is_authenticated %}

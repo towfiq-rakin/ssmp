@@ -60,6 +60,17 @@ def apply_stipend():
         flash('You already have a pending application.', 'warning')
         return redirect(url_for('student.stipends'))
     
+    # Check for rejected application for the same semester
+    rejected_application = Application.query.filter_by(
+        student_id=current_user.student_id,
+        semester=semester_name,
+        status='Rejected'
+    ).first()
+    
+    if rejected_application:
+        flash('You cannot apply again for this semester as your previous application was rejected.', 'danger')
+        return redirect(url_for('student.stipends'))
+    
     # Get form data
     amount = request.form.get('amount')
     source = request.form.get('source')

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Stipend Application History - ScholarMate{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="page-title">Stipend Application History</h1>
+    
+    <div class="student-info-card">
+        <div class="budget-info">
+            <div class="budget-item">
+                <span class="info-label">Department:</span>
+                <span class="info-value">{{ department.name }}</span>
+            </div>
+            <div class="budget-item">
+                <span class="info-label">Total Applications:</span>
+                <span class="info-value">{{ applications|length }}</span>
+            </div>
+        </div>
+        
+        <!-- Filter Tabs -->
+        <div class="filter-tabs">
+            <a href="{{ url_for('admin_stipend.application_history', status='all') }}" 
+               class="filter-tab {% if status_filter == 'all' %}active{% endif %}">
+                All
+            </a>
+            <a href="{{ url_for('admin_stipend.application_history', status='pending') }}" 
+               class="filter-tab {% if status_filter == 'pending' %}active{% endif %}">
+                Pending
+            </a>
+            <a href="{{ url_for('admin_stipend.application_history', status='approved') }}" 
+               class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">
+                Approved
+            </a>
+            <a href="{{ url_for('admin_stipend.application_history', status='rejected') }}" 
+               class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">
+                Rejected
+            </a>
+        </div>
+        
+        <!-- Applications Table -->
+        {% if applications %}
+        <div class="table-container">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Application ID</th>
+                        <th>Student ID</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Semester</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Applied On</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in applications %}
+                    <tr>
+                        <td>#{{ item.application.id }}</td>
+                        <td>{{ item.student.student_id }}</td>
+                        <td><strong>{{ item.student.name }}</strong></td>
+                        <td>{{ item.application.type }}</td>
+                        <td>{{ item.application.semester }}</td>
+                        <td>৳{{ "{:,.2f}".format(item.amount) }}</td>
+                        <td>
+                            <span class="status-badge status-{{ item.application.status|lower }}">
+                                {{ item.application.status }}
+                            </span>
+                        </td>
+                        <td>{{ item.application.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            <a href="{{ url_for('admin_stipend.admin_stipend_detail', application_id=item.application.id) }}" 
+                               class="btn btn-details">
+                                View
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="no-results">No stipend applications found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.budget-info {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.budget-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.budget-item .info-value {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2196f3;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0;
+}
+
+.filter-tab {
+    padding: 12px 24px;
+    text-decoration: none;
+    color: #666;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    font-weight: 500;
+    margin-bottom: -2px;
+}
+
+.filter-tab:hover {
+    color: #2196f3;
+    background-color: #f5f5f5;
+}
+
+.filter-tab.active {
+    color: #2196f3;
+    border-bottom-color: #2196f3;
+    font-weight: bold;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.btn-details {
+    background-color: #2196f3;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.btn-details:hover {
+    background-color: #1976d2;
+}
+
+@media (max-width: 768px) {
+    .filter-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    
+    .budget-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+</style>
+{% endblock %}
