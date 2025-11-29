@@ -236,7 +236,6 @@ def academics():
         plt.axhline(y=academic_record.cgpa, color='#4caf50', linestyle='--', label=f'CGPA: {academic_record.cgpa:.2f}')
         plt.xlabel('Semester', fontsize=10)
         plt.ylabel('GPA', fontsize=10)
-        plt.title('GPA Progression', fontsize=12, fontweight='bold')
         plt.ylim(y_min, y_max)
         plt.legend(fontsize=9)
         plt.grid(axis='y', alpha=0.3, linestyle='--')
@@ -250,7 +249,7 @@ def academics():
         # Bar chart - Semester Comparison
         plt.figure(figsize=(7, 4))
         colors = ['#4caf50' if gpa >= 3.8 else '#2196f3' if gpa >= 3.5 else '#ff9800' if gpa >= 3.0 else '#f44336' for gpa in gpas]
-        bars = plt.bar(semesters, gpas, color=colors, alpha=0.8, edgecolor='black', linewidth=1.5)
+        bars = plt.bar(semesters, gpas, color=colors, alpha=0.8)
         plt.axhline(y=academic_record.cgpa, color='#9c27b0', linestyle='--', linewidth=2, label=f'CGPA: {academic_record.cgpa:.2f}')
         
         # Add value labels on top of bars
@@ -262,7 +261,6 @@ def academics():
         
         plt.xlabel('Semester', fontsize=10)
         plt.ylabel('GPA', fontsize=10)
-        plt.title('Semester-wise GPA Comparison', fontsize=12, fontweight='bold')
         plt.ylim(y_min, y_max)  # Extra padding for labels
         plt.legend(fontsize=9)
         plt.grid(axis='y', alpha=0.3, linestyle='--')
