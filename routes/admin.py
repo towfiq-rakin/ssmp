@@ -69,7 +69,7 @@ def students():
                          search_query=search_query)
 
 
-@admin_bp.route('/student/<int:student_id>')
+@admin_bp.route('/student/<student_id>')
 @login_required
 def view_student(student_id):
     """View detailed information about a specific student"""
@@ -77,6 +77,9 @@ def view_student(student_id):
     if not isinstance(current_user, Admin):
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('main.dashboard'))
+    
+    # Convert student_id to int
+    student_id = int(student_id)
     
     # Get student
     student = User.query.get(student_id)
@@ -98,13 +101,16 @@ def view_student(student_id):
                          academic_record=academic_record)
 
 
-@admin_bp.route('/student/<int:student_id>/academic-record/update', methods=['POST'])
+@admin_bp.route('/student/<student_id>/academic-record/update', methods=['POST'])
 @login_required
 def update_academic_record(student_id):
     """Update student academic record"""
     # Check if user is admin
     if not isinstance(current_user, Admin):
         return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Convert student_id to int
+    student_id = int(student_id)
     
     # Get student
     student = User.query.get(student_id)
@@ -121,32 +127,37 @@ def update_academic_record(student_id):
     if not academic_record:
         return jsonify({'success': False, 'message': 'Academic record not found'}), 404
     
-    # Get form data
+    # Get JSON data
     try:
-        cgpa = float(request.form.get('cgpa', 0))
-        current_semester = int(request.form.get('current_semester', 1))
+        data = request.get_json()
+        current_semester = int(data.get('current_semester', 1))
+        semester_gpas = data.get('semester_gpas', {})
         
-        # Update CGPA and current semester
-        academic_record.cgpa = cgpa
+        # Update current semester
         academic_record.current_semester = current_semester
         
         # Update individual semester GPAs
         for i in range(1, 9):
             semester_gpa_key = f'semester_{i}_gpa'
-            semester_gpa_value = request.form.get(semester_gpa_key)
             
-            if semester_gpa_value and semester_gpa_value.strip():
-                try:
-                    gpa = float(semester_gpa_value)
-                    setattr(academic_record, semester_gpa_key, gpa)
-                except ValueError:
-                    continue
+            # Check if this semester has a GPA value
+            if str(i) in semester_gpas:
+                gpa_value = semester_gpas[str(i)]
+                if gpa_value is not None:
+                    setattr(academic_record, semester_gpa_key, float(gpa_value))
+                else:
+                    setattr(academic_record, semester_gpa_key, None)
+        
+        # Calculate CGPA from all non-null semester GPAs
+        cgpa = academic_record.calculate_cgpa()
+        academic_record.cgpa = cgpa
         
         db.session.commit()
         
         return jsonify({
             'success': True,
-            'message': 'Academic record updated successfully'
+            'message': 'Academic record updated successfully',
+            'cgpa': cgpa
         })
     
     except Exception as e:
