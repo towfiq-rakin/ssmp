@@ -6,7 +6,6 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 from models import AcademicRecord, Admin, User, Department, Stipend, Application, IncomeRecord
 from extensions import db
-from datetime import datetime
 
 admin_stipend_bp = Blueprint('admin_stipend', __name__, url_prefix='/admin')
 
@@ -141,8 +140,7 @@ def approve_stipend_application(application_id):
         student_name=student.name,
         type=application.type,
         amount=amount,
-        semester=application.semester,
-        awarded_at=datetime.now()
+        semester=application.semester
     )
     
     # Update Application status

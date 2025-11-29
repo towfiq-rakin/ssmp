@@ -6,13 +6,12 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash,
 from flask_login import login_required, current_user
 from models import AcademicRecord, Admin, User, Department, Scholarship
 from extensions import db
-from datetime import datetime
 
 admin_scholarship_bp = Blueprint('admin_scholarship', __name__, url_prefix='/admin')
 
 
 
-@admin_scholarship_bp.route('/admin/scholarships')
+@admin_scholarship_bp.route('/scholarships')
 @login_required
 def admin_scholarships():
     """Admin scholarships page - displays eligible students for scholarships"""
@@ -81,7 +80,7 @@ def admin_scholarships():
                          total_scholarship_amount=total_scholarship_amount)
 
 
-@admin_scholarship_bp.route('/admin/scholarship/<int:student_id>')
+@admin_scholarship_bp.route('/scholarship/<student_id>')
 @login_required
 def admin_view_scholarship(student_id):
     """Admin view for individual student scholarship details"""
@@ -89,6 +88,9 @@ def admin_view_scholarship(student_id):
     if not isinstance(current_user, Admin):
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('admin_scholarship.dashboard'))
+    
+    # Convert student_id to int
+    student_id = int(student_id)
     
     # Get student
     student = User.query.filter_by(student_id=student_id).first()
@@ -133,13 +135,16 @@ def admin_view_scholarship(student_id):
                          last_completed_semester=last_completed_semester)
 
 
-@admin_scholarship_bp.route('/admin/scholarship/approve/<int:student_id>', methods=['POST'])
+@admin_scholarship_bp.route('/scholarship/approve/<student_id>', methods=['POST'])
 @login_required
 def approve_scholarship(student_id):
     """Approve scholarship for a student"""
     # Check if user is admin
     if not isinstance(current_user, Admin):
         return jsonify({'success': False, 'message': 'Access denied'}), 403
+    
+    # Convert student_id to int
+    student_id = int(student_id)
     
     # Get student
     student = User.query.filter_by(student_id=student_id).first()
@@ -192,8 +197,7 @@ def approve_scholarship(student_id):
         student_name=student.name,
         type=scholarship_type,
         amount=scholarship_amount,
-        semester=semester_name,
-        awarded_at=datetime.now()
+        semester=semester_name
     )
     
     # Update department budget
@@ -209,7 +213,7 @@ def approve_scholarship(student_id):
     })
 
 
-@admin_scholarship_bp.route('/admin/scholarship/approve-all', methods=['POST'])
+@admin_scholarship_bp.route('/scholarship/approve-all', methods=['POST'])
 @login_required
 def approve_all_scholarships():
     """Approve all eligible scholarships"""
@@ -264,8 +268,7 @@ def approve_all_scholarships():
                         student_name=student.name,
                         type=scholarship_type,
                         amount=scholarship_amount,
-                        semester=semester_name,
-                        awarded_at=datetime.now()
+                        semester=semester_name
                     )
                     
                     # Update department budget
@@ -286,7 +289,7 @@ def approve_all_scholarships():
     })
 
 
-@admin_scholarship_bp.route('/admin/scholarship/approve-multiple', methods=['POST'])
+@admin_scholarship_bp.route('/scholarship/approve-multiple', methods=['POST'])
 @login_required
 def approve_multiple_scholarships():
     """Approve multiple selected scholarships"""
@@ -365,8 +368,7 @@ def approve_multiple_scholarships():
             student_name=student.name,
             type=scholarship_type,
             amount=scholarship_amount,
-            semester=semester_name,
-            awarded_at=datetime.now()
+            semester=semester_name
         )
         
         # Update department budget
@@ -392,7 +394,7 @@ def approve_multiple_scholarships():
     })
 
 
-@admin_scholarship_bp.route('/admin/scholarships/view')
+@admin_scholarship_bp.route('/scholarships/view')
 @login_required
 def admin_view_scholarships():
     """Admin view scholarships page - displays all awarded scholarships"""
