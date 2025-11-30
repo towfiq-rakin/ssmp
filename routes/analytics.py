@@ -23,7 +23,7 @@ def generate_cgpa_distribution_chart(dept_id):
             cgpas.append(record.cgpa)
     
     plt.figure(figsize=(10, 6))
-    plt.hist(cgpas, bins=15, color='#4caf50', edgecolor='black', alpha=0.7)
+    plt.hist(cgpas, bins=15, color='#4caf50', edgecolor='white',linewidth =2, alpha=1)
     plt.xlabel('CGPA', fontsize=12)
     plt.ylabel('Number of Students', fontsize=12)
     plt.grid(axis='y', alpha=0.3, linestyle='--')
@@ -52,7 +52,7 @@ def generate_last_semester_gpa_chart(dept_id):
             last_semester_gpas.append(last_gpa)
     
     plt.figure(figsize=(10, 6))
-    plt.hist(last_semester_gpas, bins=15, color='#2196f3', edgecolor='black', alpha=0.7)
+    plt.hist(last_semester_gpas, bins=15, color='#2196f3', edgecolor='white',linewidth =2, alpha=1)
     plt.xlabel('Last Semester GPA', fontsize=12)
     plt.ylabel('Number of Students', fontsize=12)
     plt.grid(axis='y', alpha=0.3, linestyle='--')
