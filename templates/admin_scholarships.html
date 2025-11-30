@@ -46,14 +46,6 @@
                         <td class="action-buttons">
                             <a href="{{ url_for('admin_scholarship.admin_view_scholarship', student_id=item.student.student_id) }}" 
                                class="btn btn-view">Details</a>
-                            <button class="btn btn-approve" 
-                                    onclick="approveScholarship({{ item.student.student_id }}, {{ item.scholarship_amount }})">
-                                Approve
-                            </button>
-                            <button class="btn btn-reject" 
-                                    onclick="rejectScholarship({{ item.student.student_id }}, {{ item.scholarship_amount }})">
-                                Reject
-                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -71,165 +63,11 @@
                 <span class="info-value budget-amount" id="total-award">৳{{ "{:,.2f}".format(total_scholarship_amount) }}</span>
             </div>
         </div>
-        
-        <div class="pending-summary" id="pending-amount" style="display: none;">
-            <div class="summary-item">
-                <span class="info-label">⏳ Pending Approval Amount (Not Saved):</span>
-                <span class="info-value budget-amount pending-value">৳0.00</span>
-            </div>
-        </div>
-        
-        <div class="approve-all-section">
-            <button class="btn btn-approve-all" onclick="approveAll()">
-                Approve All
-            </button>
-            <button class="btn btn-update" onclick="updateDatabase()">
-                Update Database
-            </button>
-        </div>
         {% else %}
         <p class="no-results">No students eligible for scholarships at this time.</p>
         {% endif %}
     </div>
 </div>
-
-<script>
-let totalAwardAmount = parseFloat('{{ total_scholarship_amount }}');
-let remainingBudget = parseFloat('{{ department.budget }}');
-let approvedStudents = []; // Track students approved but not yet saved to database
-
-function approveScholarship(studentId, amount) {
-    if (!confirm('Are you sure you want to approve this scholarship?')) {
-        return;
-    }
-    
-    // Add to approved list
-    const row = document.getElementById(`student-row-${studentId}`);
-    if (!row) return;
-    
-    // Mark as approved visually
-    row.style.backgroundColor = '#c8e6c9';
-    const actionCell = row.cells[row.cells.length - 1];
-    actionCell.innerHTML = '<span class="approved-badge">✓ Approved (Not Saved)</span>';
-    
-    // Add to approved list
-    approvedStudents.push({
-        studentId: studentId,
-        amount: amount
-    });
-    
-    // Update totals
-    updateLocalTotals();
-}
-
-function rejectScholarship(studentId, amount) {
-    if (!confirm('Are you sure you want to reject this scholarship?')) {
-        return;
-    }
-    
-    // Remove from approved list if it was there
-    approvedStudents = approvedStudents.filter(s => s.studentId !== studentId);
-    
-    // Remove row
-    const row = document.getElementById(`student-row-${studentId}`);
-    row.remove();
-    
-    // Update totals
-    totalAwardAmount -= amount;
-    updateLocalTotals();
-}
-
-function updateLocalTotals() {
-    // Calculate pending amount from approved students
-    const pendingAmount = approvedStudents.reduce((sum, s) => sum + s.amount, 0);
-    
-    // Update display
-    document.getElementById('total-award').textContent = '৳' + totalAwardAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    
-    // Update student count
-    const tableBody = document.getElementById('scholarship-table-body');
-    const rowCount = tableBody.getElementsByTagName('tr').length;
-    document.getElementById('total-students').textContent = rowCount;
-    
-    // Show pending amount if any
-    const pendingDiv = document.getElementById('pending-amount');
-    if (pendingAmount > 0) {
-        pendingDiv.style.display = 'block';
-        pendingDiv.querySelector('.pending-value').textContent = '৳' + pendingAmount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    } else {
-        pendingDiv.style.display = 'none';
-    }
-}
-
-function approveAll() {
-    if (!confirm('Are you sure you want to approve all eligible scholarships?')) {
-        return;
-    }
-    
-    const tableBody = document.getElementById('scholarship-table-body');
-    const rows = tableBody.getElementsByTagName('tr');
-    
-    // Approve all rows
-    for (let row of rows) {
-        const studentId = parseInt(row.id.replace('student-row-', ''));
-        const amountText = row.cells[5].textContent.replace('৳', '').replace(',', '');
-        const amount = parseFloat(amountText);
-        
-        // Check if not already approved
-        if (!approvedStudents.find(s => s.studentId === studentId)) {
-            // Mark as approved visually
-            row.style.backgroundColor = '#c8e6c9';
-            const actionCell = row.cells[row.cells.length - 1];
-            actionCell.innerHTML = '<span class="approved-badge">✓ Approved (Not Saved)</span>';
-            
-            // Add to approved list
-            approvedStudents.push({
-                studentId: studentId,
-                amount: amount
-            });
-        }
-    }
-    
-    updateLocalTotals();
-    alert('All scholarships marked as approved. Click "Update Database" to save changes.');
-}
-
-function updateDatabase() {
-    if (approvedStudents.length === 0) {
-        alert('No scholarships to update. Please approve some scholarships first.');
-        return;
-    }
-    
-    if (!confirm(`Are you sure you want to save ${approvedStudents.length} approved scholarship(s) to the database?`)) {
-        return;
-    }
-    
-    // Send approved students to backend
-    fetch('/admin/scholarship/approve-multiple', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            studentIds: approvedStudents.map(s => s.studentId)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            // Reload page to show updated list
-            window.location.reload();
-        } else {
-            alert('Error: ' + data.message);
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while updating the database.');
-    });
-}
-</script>
 
 <style>
 .budget-info {
@@ -340,33 +178,6 @@ function updateDatabase() {
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-}
-
-.approved-badge {
-    background-color: #4caf50;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    font-weight: bold;
-    display: inline-block;
-}
-
-.pending-summary {
-    padding: 15px;
-    background-color: #fff3cd;
-    border-left: 5px solid #ffc107;
-    border-radius: 8px;
-    margin-top: 15px;
-    text-align: center;
-}
-
-.pending-summary .info-label {
-    color: #856404;
-    font-weight: bold;
-}
-
-.pending-summary .budget-amount {
-    color: #856404;
 }
 
 .info-note {
