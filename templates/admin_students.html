@@ -7,6 +7,16 @@
     <h1 class="page-title">Students</h1>
     
     <div class="student-info-card">
+        <!-- Export Buttons -->
+        <div class="export-buttons">
+            <a href="{{ url_for('reports.export_students_excel') }}" class="btn btn-export-excel">
+                📊 Export to Excel
+            </a>
+            <a href="{{ url_for('reports.export_students_pdf') }}" class="btn btn-export-pdf">
+                📄 Export to PDF
+            </a>
+        </div>
+        
         <!-- Search Form -->
         <div class="search-container">
             <form method="GET" action="{{ url_for('admin.students') }}">

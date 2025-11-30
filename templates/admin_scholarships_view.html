@@ -7,6 +7,16 @@
     <h1 class="page-title">📚 Awarded Scholarships</h1>
     
     <div class="student-info-card">
+        <!-- Export Buttons -->
+        <div class="export-buttons">
+            <a href="{{ url_for('reports.export_scholarships_excel') }}" class="btn btn-export-excel">
+                📊 Export to Excel
+            </a>
+            <a href="{{ url_for('reports.export_scholarships_pdf') }}" class="btn btn-export-pdf">
+                📄 Export to PDF
+            </a>
+        </div>
+        
         <div class="budget-info">
             <div class="budget-item">
                 <span class="info-label">Department:</span>
