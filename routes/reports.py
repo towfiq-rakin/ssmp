@@ -169,11 +169,7 @@ def export_students_pdf():
         Paragraph('<b>Student ID</b>', cell_style),
         Paragraph('<b>Name</b>', cell_style),
         Paragraph('<b>Email</b>', cell_style),
-        Paragraph('<b>CGPA</b>', cell_style),
-        Paragraph('<b>Sem 1</b>', cell_style),
-        Paragraph('<b>Sem 2</b>', cell_style),
-        Paragraph('<b>Sem 3</b>', cell_style),
-        Paragraph('<b>Sem 4</b>', cell_style)
+        Paragraph('<b>CGPA</b>', cell_style)
     ]]
     
     for student, academic_record in students:
@@ -181,15 +177,11 @@ def export_students_pdf():
             Paragraph(str(student.student_id), cell_style),
             Paragraph(student.name, cell_style),
             Paragraph(student.email, cell_style),
-            Paragraph(f"{academic_record.cgpa:.2f}" if academic_record.cgpa else 'N/A', cell_style),
-            Paragraph(f"{academic_record.semester_1_gpa:.2f}" if academic_record.semester_1_gpa else 'N/A', cell_style),
-            Paragraph(f"{academic_record.semester_2_gpa:.2f}" if academic_record.semester_2_gpa else 'N/A', cell_style),
-            Paragraph(f"{academic_record.semester_3_gpa:.2f}" if academic_record.semester_3_gpa else 'N/A', cell_style),
-            Paragraph(f"{academic_record.semester_4_gpa:.2f}" if academic_record.semester_4_gpa else 'N/A', cell_style)
+            Paragraph(f"{academic_record.cgpa:.2f}" if academic_record.cgpa else 'N/A', cell_style)
         ])
     
     # Create table with adjusted column widths for portrait
-    table = Table(data, colWidths=[0.7*inch, 1.3*inch, 1.6*inch, 0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch, 0.5*inch])
+    table = Table(data, colWidths=[1.2*inch, 2.0*inch, 2.5*inch, 0.8*inch])
     
     # Table style
     table.setStyle(TableStyle([
