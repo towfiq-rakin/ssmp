@@ -1,5 +1,5 @@
 """
-SSMP - Student Session Management Platform
+SSMP - Scholarship & Stipend Management Platform
 Main Application Entry Point
 """
 from flask import Flask

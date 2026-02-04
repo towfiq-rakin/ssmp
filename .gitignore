@@ -58,3 +58,15 @@ instance/
 .coverage
 htmlcov/
 database/test.sql
+
+# Documentation (exclude all except README)
+*.md
+!README.md
+
+# Test files
+test_*.py
+*_test.py
+
+# Miscellaneous
+*.tmp
+*.bak
